@@ -1,0 +1,130 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: light;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+}
+
+body,
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: #e6e7eb;
+  color: #2c3138;
+  font-family: var(--font-manrope), "Segoe UI", sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-weight: 560;
+}
+
+.neo {
+  background: #f3f4f7;
+  border-radius: 1.35rem;
+  box-shadow:
+    8px 8px 18px #c8cad1,
+    -8px -8px 18px #ffffff;
+}
+
+.neo-inset {
+  width: 100%;
+  background: #e7e9ee;
+  border: none;
+  border-radius: 0.95rem;
+  box-shadow:
+    inset 5px 5px 10px #c8cad1,
+    inset -5px -5px 10px #ffffff;
+  color: #2c3138;
+}
+
+.neo-inset:focus {
+  outline: 2px solid #c4161c;
+  outline-offset: 2px;
+}
+
+.btn-red,
+.btn-neo,
+.btn-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  min-height: 3rem;
+  padding: 0.7rem 1.25rem;
+  border: none;
+  border-radius: 0.95rem;
+  font-weight: 650;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-red {
+  background: #c4161c;
+  color: #ffffff;
+  box-shadow:
+    5px 5px 14px #c8cad1,
+    -4px -4px 12px #ffffff;
+}
+
+.btn-red:hover {
+  background: #a51218;
+}
+
+.btn-neo {
+  background: #f3f4f7;
+  color: #2c3138;
+  box-shadow:
+    5px 5px 14px #c8cad1,
+    -4px -4px 12px #ffffff;
+}
+
+.btn-neo:hover {
+  color: #8e1218;
+}
+
+.btn-quiet {
+  min-height: 2.5rem;
+  background: transparent;
+  color: #8e1218;
+  box-shadow: none;
+}
+
+.btn-red:disabled,
+.btn-neo:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-red:focus-visible,
+.btn-neo:focus-visible,
+.btn-quiet:focus-visible {
+  outline: 2px solid #2c3138;
+  outline-offset: 3px;
+}
