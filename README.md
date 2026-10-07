@@ -31,9 +31,12 @@ A aplicação opera no padrão visual de **Neumorfismo** com a identidade instit
 * **Gestão de Pessoas & RBAC:** Busca rápida, filtros por papel e situação, alteração ágil de permissões com gravação em transação e histórico de auditoria.
 * **Governança:** Desativação e reativação segura de contas com modal Neumorphic de confirmação.
 
-### 3. Jornada e Conversão do Proponente (`/` e `/proponente`)
+### 3. Jornada e Painel Completo do Proponente (`/proponente`)
 * **Landing Page Educativa (`/`):** Explicação da **Lei nº 11.196/2005**, dedução de até 34% em tributos federais (IRPJ/CSLL), jornada em 4 etapas e simulador interativo de economia fiscal para incentivar o autocadastro.
-* **Central do Proponente (`/proponente`):** Guia técnico com os critérios avaliados pela equipe de P&D, checklist de requisitos e submissão interativa de propostas de inovação direto para a esteira do analista.
+* **Dashboard Principal (`/proponente`):** Visão geral do portfólio, KPIs de projetos e economia estimada, checklist de prontidão fiscal (Lucro Real, CND) e atalhos rápidos.
+* **Subpágina de Envios (`/proponente/envios`):** Formulário guiado com os critérios do Manual de Frascati (Incerteza Técnica, Metodologia), cálculo em tempo real de incentivo fiscal e simulação de anexos técnicos.
+* **Subpágina de Acompanhamento (`/proponente/acompanhamento`):** Stepper visual da esteira de P&D (Submissão $\rightarrow$ Triagem $\rightarrow$ Análise $\rightarrow$ Parecer), leitura da deliberação do analista, canal de respostas a diligências e emissão de declaração preliminar (PDF).
+* **Subpágina de Configurações (`/proponente/configuracoes`):** Cadastro institucional da pessoa jurídica, enquadramento no Lucro Real, status de CND, dados dos responsáveis técnicos/contábeis e alertas da esteira.
 
 ---
 
@@ -92,7 +95,10 @@ frontend/
 │   ├── app/              # Next.js App Router
 │   │   ├── adm/          # CRM de Gestão de Acessos e Pessoas
 │   │   ├── analista/     # CRM de Pipeline e Dossiês da Lei do Bem
-│   │   ├── proponente/   # Central de Propostas e Guia do Proponente
+│   │   ├── proponente/   # Dashboard Principal do Proponente
+│   │   │   ├── envios/   # Submissão e histórico de projetos
+│   │   │   ├── acompanhamento/ # Timeline de esteira e pareceres
+│   │   │   └── configuracoes/ # Perfil fiscal da empresa (Lucro Real, CND)
 │   │   ├── cadastrar/    # Cadastro público para proponentes
 │   │   ├── entrar/       # Autenticação unificada
 │   │   ├── layout.tsx    # Layout raiz com Provedor de Temas

@@ -21,8 +21,10 @@ A aplicação segue uma abordagem onde:
 src/
 ├── app/                  # Roteamento e Páginas (App Router)
 │   ├── (rotas públicas)  # /, /entrar, /cadastrar
-│   └── (rotas protegidas)# /proponente, /analista, /adm, /adm/novo
+│   └── (rotas protegidas)# /analista, /adm, /adm/novo
+│       └── /proponente   # Dashboard (/proponente), /envios, /acompanhamento, /configuracoes
 ├── components/           # Camada de Apresentação e Componentes
+│   ├── navegacao-proponente.tsx # Barra de subpáginas do proponente
 │   ├── casca.tsx         # Shell autenticada padrão
 │   ├── tela-acesso.tsx   # Shell para páginas de auth
 │   ├── botoes.tsx        # Botões padronizados (primário, secundário, quieto)

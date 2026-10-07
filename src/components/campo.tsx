@@ -9,12 +9,24 @@ type CampoProps = {
   valor: string;
   onChange: (valor: string) => void;
   autoComplete?: string;
+  placeholder?: string;
+  obrigatorio?: boolean;
   erro?: string;
 };
 
-export function Campo({ id, rotulo, tipo = "text", valor, onChange, autoComplete, erro }: CampoProps) {
+export function Campo({
+  id,
+  rotulo,
+  tipo = "text",
+  valor,
+  onChange,
+  autoComplete,
+  placeholder,
+  obrigatorio,
+  erro,
+}: CampoProps) {
   return (
-    <Field.Root invalid={Boolean(erro)} required>
+    <Field.Root invalid={Boolean(erro)} required={obrigatorio}>
       <Field.Label htmlFor={id} className="text-sm font-semibold text-[#2C3138]">
         {rotulo}
       </Field.Label>
@@ -24,6 +36,7 @@ export function Campo({ id, rotulo, tipo = "text", valor, onChange, autoComplete
         type={tipo}
         value={valor}
         autoComplete={autoComplete}
+        placeholder={placeholder}
         unstyled
         className="neo-inset mt-1 h-12 px-4 text-base"
         onChange={(evento) => onChange(evento.target.value)}
