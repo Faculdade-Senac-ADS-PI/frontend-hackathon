@@ -45,8 +45,8 @@ export default function Cadastrar() {
 
   return (
     <TelaAcesso
-      titulo="Criar conta de proponente"
-      texto="O cadastro abre acesso básico. Quando o envio de projetos existir, o material entra por aqui. Contas de analista e de ADM são criadas pela administração."
+      titulo="Cadastro de Proponente — Lei do Bem"
+      texto="Cadastre sua empresa para submeter projetos de inovação tecnológica diretamente à esteira dos analistas de P&D e usufruir de até 34% de redução em tributos federais."
     >
       <form className="flex flex-col gap-4" onSubmit={enviar}>
         {erro ? <Aviso tipo="error" texto={erro} /> : null}

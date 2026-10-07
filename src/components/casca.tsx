@@ -14,10 +14,20 @@ import type { Usuario } from "@/lib/tipos";
 type CascaProps = {
   titulo: string;
   descricao: string;
+  acoes?: ReactNode;
+  larguraMaxima?: string;
+  ocultarCardAcesso?: boolean;
   children: (perfil: Usuario) => ReactNode;
 };
 
-export function Casca({ titulo, descricao, children }: CascaProps) {
+export function Casca({
+  titulo,
+  descricao,
+  acoes,
+  larguraMaxima = "max-w-7xl",
+  ocultarCardAcesso = false,
+  children,
+}: CascaProps) {
   const router = useRouter();
   const [perfil, setPerfil] = useState<Usuario | null>(null);
   const [erro, setErro] = useState("");
@@ -81,20 +91,25 @@ export function Casca({ titulo, descricao, children }: CascaProps) {
           </BotaoQuieto>
         </div>
       </header>
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 pb-16 sm:px-6">
-        <div>
-          <h1 className="font-display text-3xl text-balance text-[#2C3138] sm:text-4xl">{titulo}</h1>
-          <p className="mt-2 max-w-3xl text-[#5E6570]">{descricao}</p>
+      <main className={`mx-auto flex w-full ${larguraMaxima} flex-col gap-6 px-4 pb-16 sm:px-6`}>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="font-display text-3xl text-balance text-[#2C3138] sm:text-4xl">{titulo}</h1>
+            <p className="mt-2 max-w-3xl text-[#5E6570]">{descricao}</p>
+          </div>
+          {acoes ? <div className="flex shrink-0 items-center gap-3">{acoes}</div> : null}
         </div>
-        <section className="neo p-5 md:p-6">
-          <h2 className="font-display text-xl">Seu acesso</h2>
-          <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Item rotulo="Nome" valor={perfil.nome} />
-            <Item rotulo="E-mail" valor={perfil.email} />
-            <Item rotulo="Papel" valor={rotuloPapel(perfil.papel)} />
-            <Item rotulo="Situação" valor={perfil.ativo ? "Ativa" : "Desativada"} />
-          </dl>
-        </section>
+        {!ocultarCardAcesso ? (
+          <section className="neo p-5 md:p-6">
+            <h2 className="font-display text-xl">Seu acesso</h2>
+            <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Item rotulo="Nome" valor={perfil.nome} />
+              <Item rotulo="E-mail" valor={perfil.email} />
+              <Item rotulo="Papel" valor={rotuloPapel(perfil.papel)} />
+              <Item rotulo="Situação" valor={perfil.ativo ? "Ativa" : "Desativada"} />
+            </dl>
+          </section>
+        ) : null}
         {children(perfil)}
       </main>
     </div>

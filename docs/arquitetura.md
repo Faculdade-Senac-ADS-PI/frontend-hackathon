@@ -1,64 +1,181 @@
-# Arquitetura
+# Arquitetura do Frontend
 
-Leitura curta para quem vai acrescentar a análise de elegibilidade em cima do acesso.
+Documento técnico da arquitetura, padrões de projeto e diretrizes de desenvolvimento da interface web do **Hackthon Web** (Hackathon STS 2026 - Lei do Bem).
 
-## Camadas
+---
 
-A dependência aponta para dentro. Domain não enxerga Application. Application não enxerga EF, HTTP nem JWT. Infrastructure e Api são detalhes.
+## 1. Visão Geral
 
-| Camada | Pasta | Responsabilidade |
-| --- | --- | --- |
-| Domain | `backend/src/Hackthon.Domain` | `Usuario` e `RegistroAcesso`. Regras que protegem o estado da conta (ativar, trocar papel). |
-| Application | `backend/src/Hackthon.Application` | Um serviço por caso de uso. Portas de repositório, transação, senha, token e agente. |
-| Infrastructure | `backend/src/Hackthon.Infrastructure` | Npgsql/EF Core, hash, emissão do JWT, semente e o agente substituto. |
-| Api | `backend/src/Hackthon.Api` | Controllers finos, JWT bearer, policies e Problem Details em português. |
+A interface web foi desenvolvida com **Next.js 15 (App Router)** e **TypeScript**, atuando de maneira totalmente desacoplada da API backend (.NET 8).
 
-A interface (`frontend/`) não fala com o banco. Ela só conhece o contrato HTTP.
+A aplicação segue uma abordagem onde:
+- A comunicação com a API ocorre via **proxy reverso interno** no Next.js (evitando problemas de CORS e mantendo o mesmo domínio).
+- O controle de acesso é aplicado de forma híbrida: **na borda (Edge Middleware)** e nos **componentes de casca autenticada**.
+- A interface é desenhada com um design system baseado em **Neumorfismo** utilizando **Chakra UI v3** e **Tailwind CSS v4**, respeitando as diretrizes de acessibilidade e a identidade visual do Banco do Nordeste.
 
-## SOLID neste corte
+---
 
-- **S** — `CriarUsuarioServico` cria conta. `AlterarPapelServico` só troca papel. Nenhum dos dois autentica.
-- **O** — um papel novo, se um dia existir, entra no enum e nos casos que já recebem `Papel`. O login não precisa mudar.
-- **L** — `IAgenteElegibilidade` pode ser trocada sem o controller saber se há RAG ou não. Hoje a implementação devolve 501.
-- **I** — `IUsuarioRepositorio` e `IRegistroAcessoRepositorio` são portas separadas. Quem só lista pessoas não depende do diário de auditoria.
-- **D** — o caso de uso pede `IUnidadeDeTrabalho`, não `HackthonDbContext`. O `Program.cs` é a composição que liga a interface à classe.
+## 2. Estrutura de Camadas
 
-## Por que transação
-
-Criar uma conta escreve duas linhas: `usuarios` e `registros_acesso`. O mesmo vale para troca de papel, desativação, reativação e autocadastro. Se a auditoria falha, a conta não pode ficar sem rastro — o desafio pede rastreabilidade. `UnidadeDeTrabalho.ExecutarEmTransacaoAsync` abre uma transação do EF Core, grava o usuário, grava o registro e só então confirma. Uma falha desfaz os dois.
-
-O login grava uma linha só (o registro de entrada). Não precisa da mesma transação de duas tabelas.
-
-A restrição única de e-mail vira HTTP 409. A regra “pelo menos um ADM ativo” e “não desativar a si mesmo” são exceções de negócio dentro da transação, antes do commit.
-
-## Como adicionar um endpoint
-
-Exemplo: listar o diário de acesso de uma pessoa, só para o ADM.
-
-1. **Domain** — se a informação já existe em `RegistroAcesso`, não crie outra entidade.
-2. **Application** — porta `IRegistroAcessoRepositorio.ListarPorUsuarioAsync` e um `ListarRegistrosServico` que devolve um DTO, sem tipo do EF.
-3. **Infrastructure** — implemente a consulta em `Repositorios.cs` e registre no DI se for uma porta nova. Se a porta já existe, só o método novo.
-4. **Api** — `GET /api/usuarios/{id}/registros` com `[Authorize(Policy = Politicas.SomenteAdm)]`. O controller chama o serviço e traduz `Resultado<T>` com `ResultadoHttp.Problema`.
-5. **Interface** — um estado de carregamento, um estado de erro com “Tentar de novo” e a lista. Sem dados, um vazio que diga o que aparecer ali.
-
-Suba a API em Development: a migration nova roda no boot (`BancoInicial`). Gere a migration com:
-
-```bash
-cd backend
-dotnet ef migrations add NomeDaMudanca \
-  --project src/Hackthon.Infrastructure \
-  --output-dir Persistencia/Migrations
+```text
+src/
+├── app/                  # Roteamento e Páginas (App Router)
+│   ├── (rotas públicas)  # /, /entrar, /cadastrar
+│   └── (rotas protegidas)# /proponente, /analista, /adm, /adm/novo
+├── components/           # Camada de Apresentação e Componentes
+│   ├── casca.tsx         # Shell autenticada padrão
+│   ├── tela-acesso.tsx   # Shell para páginas de auth
+│   ├── botoes.tsx        # Botões padronizados (primário, secundário, quieto)
+│   ├── campo.tsx         # Inputs, labels e mensagens de validação
+│   └── estados.tsx       # Componentes de Loading e Erro com retry
+├── lib/                  # Camada de Domínio, Infraestrutura e Serviços Web
+│   ├── api.ts            # Cliente HTTP com interceptação e Problem Details
+│   ├── sessao.ts         # Manipulação de cookies de sessão
+│   ├── papeis.ts         # Regras e rotas por papel (RBAC)
+│   ├── tipos.ts          # Tipos e contratos de dados
+│   └── segredo-dev.ts    # Configurações de token para desenvolvimento local
+├── middleware.ts         # Interceptador de requisições no Edge Runtime
+└── theme.ts              # Configuração do Chakra UI Provider
 ```
 
-## Agente (API + RAG + pgvector)
+### Responsabilidades por Módulo
 
-`IAgenteElegibilidade` é o único ponto que o restante do sistema deve chamar. `GET /api/agente/contrato` descreve a entrada e a saída previstas. `POST /api/agente/consulta` hoje recusa com 501.
+| Módulo | Responsabilidade |
+| --- | --- |
+| **`app/`** | Define as páginas, layouts específicos, tratamento de erros de rota (`error.tsx`), carregamento (`loading.tsx`) e página não encontrada (`not-found.tsx`). |
+| **`components/`** | Componentes puros e visuais. Isola regras de estilização e garante consistência visual em todo o projeto. |
+| **`lib/api.ts`** | Centraliza todas as chamadas HTTP, anexando o cabeçalho `Authorization: Bearer <token>` e mapeando erros RFC 7807 (Problem Details). |
+| **`lib/sessao.ts`** | Gerencia o ciclo de vida do cookie `hackthon_token` no navegador (`guardarToken`, `lerToken`, `limparToken`). |
+| **`middleware.ts`** | Valida tokens e permissões de rotas antes mesmo de iniciar o processamento da página. |
 
-A implementação real fica em `Hackthon.Infrastructure/Agente` e substitui `AgenteElegibilidadeNaoConfigurado` em `Dependencias.cs`. Ela deve:
+---
 
-- receber o projeto (quando existir) e a pergunta do analista;
-- buscar trechos no Postgres com a extensão `vector` (já criada no init do container, sem índice);
-- responder com citações (`documento`, `trecho`, `referencia`);
-- manter `decisaoAutomatica` em `false`.
+## 3. Autenticação e Controle de Acesso (RBAC)
 
-Não coloque a chave do provedor no código. Se ela faltar, o acesso dos papéis continua de pé: o agente é assistência, não porta de entrada.
+O sistema implementa **Role-Based Access Control (RBAC)** rígido para três papéis: `Proponente`, `Analista` e `Adm`.
+
+### Fluxo de Autenticação
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as Usuário
+    participant P as Página (/entrar)
+    participant C as Cliente API (lib/api.ts)
+    participant N as Next.js Proxy (/api/*)
+    participant B as Backend .NET (Porta 5088)
+    participant M as Middleware (Edge)
+
+    U->>P: Preenche e-mail e senha
+    P->>C: api("/api/auth/entrar", POST)
+    C->>N: POST /api/auth/entrar
+    N->>B: Encaminha para http://127.0.0.1:5088/api/auth/entrar
+    B-->>N: 200 OK + JWT (claims: sub, email, nome, papel)
+    N-->>C: Retorna token e dados do usuário
+    C-->>P: Sucesso
+    P->>P: guardarToken(token) via Cookie 'hackthon_token'
+    P->>U: Redireciona para rota do papel (/proponente, /analista ou /adm)
+    U->>M: Navega para a rota protegida
+    M->>M: Valida JWT com jose e checa permissão do papel
+    M-->>U: Permite acesso à tela correspondente
+```
+
+### Regras do Middleware (`src/middleware.ts`)
+
+1. **Rotas Públicas:** `/`, `/entrar`, `/cadastrar`. Se um usuário já logado acessar essas rotas, é redirecionado automaticamente para o painel correspondente ao seu papel.
+2. **Rotas Protegidas:**
+   * `/proponente/*` $\rightarrow$ requer papel `Proponente`.
+   * `/analista/*` $\rightarrow$ requer papel `Analista`.
+   * `/adm/*` $\rightarrow$ requer papel `Adm`.
+3. **Não Autenticado:** Qualquer tentativa de acessar rota protegida sem cookie redireciona para `/entrar`.
+4. **Papel Incompatível:** Usuário autenticado que tente acessar rota de outro papel é redirecionado para a home do seu respectivo papel.
+
+### Hidratação e Validação em Tempo Real (`Casca.tsx`)
+
+Além do middleware na borda, o componente de layout autenticado [`Casca`](../src/components/casca.tsx) consulta `/api/auth/eu` no momento em que o componente é montado. Isso garante que:
+- O perfil e status da conta são validados em tempo real com o banco de dados.
+- Caso a conta tenha sido desativada por um administrador, a API retorna `401` ou `403`, o token é imediatamente limpo e o usuário é redirecionado para a tela de login.
+
+---
+
+## 4. Integração com a API Backend
+
+### Proxy Reverso (Next.js Rewrites)
+
+O arquivo [`next.config.ts`](../next.config.ts) define um rewrite automático:
+
+```typescript
+async rewrites() {
+  return [
+    {
+      source: "/api/:path*",
+      destination: `${apiInterna}/api/:path*`,
+    },
+  ];
+}
+```
+
+Isso garante que:
+* As chamadas partem de `http://127.0.0.1:43123/api/...` e não exigem configuração de CORS no backend para origens dinâmicas.
+* Cookies enviados na mesma origem são manipulados de forma segura e transparente.
+
+### Tratamento Padronizado de Erros
+
+A função [`api<T>()`](../src/lib/api.ts) intercepta respostas de erro e extrai a mensagem do formato RFC 7807 (*Problem Details*) adotado pelo backend:
+```typescript
+if (!resposta.ok) {
+  const detalhe = corpo?.detail || corpo?.title || "A operação não foi concluída.";
+  if (resposta.status === 401 && !entrada && caminho !== "/api/auth/eu") {
+    limparToken();
+  }
+  throw new ErroApi(detalhe, resposta.status);
+}
+```
+
+---
+
+## 5. Design System e Interface CRM
+
+O projeto adota uma estética de **Neumorfismo leve e funcional**, focada em densidade de dados e profissionalismo para ambientes corporativos:
+
+- **Componentes de Contêiner Neumorphic:**
+  - `.neo`: Superfícies elevadas com sombras suaves côncavas/convexas (`8px 8px 18px #c8cad1`, `-8px -8px 18px #ffffff`).
+  - `.neo-inset`: Superfícies rebaixadas para inputs, cartões de métricas secundárias e containers de detalhes.
+- **Identidade Visual:**
+  - Destaque em tom vermelho institucional (`#C4161C` e `#8E1218`) associado ao Banco do Nordeste.
+  - Paleta base em cinzas suaves (`#E6E7EB`, `#F3F4F7`, `#E7E9EE`) que garantem contraste e conforto visual.
+  - Textos de alto contraste (`#2C3138` e `#5E6570`).
+
+### Padrão CRM (Analista e ADM)
+1. **Métricas e KPIs no Topo:** Indicadores operacionais imediatos (propostas em triagem, em análise, elegíveis, dispêndios totais e economia fiscal estimada).
+2. **Barra de Ferramentas CRM:** Busca instantânea no client-side combinada com filtros categóricos (status, área tecnológica e situação cadastral).
+3. **Visão 360° do Caso (Dossiê):** Modal com os 5 critérios do **Manual de Frascati** (Incerteza, Novidade, Criatividade, Sistematicidade, Reprodutibilidade) para fundamentação de parecer técnico auditável.
+4. **Governança Segura:** No ADM, qualquer troca de papel ou desativação de conta é registrada na transação do banco com rastro imutável.
+
+### Jornada do Proponente (Conversão e Indução)
+1. **Landing Page (`/`):** Explicação detalhada da **Lei do Bem (Lei 11.196/05)**, vantagens fiscais (dedução de até 34% no IRPJ/CSLL), jornada em 4 etapas e simulador interativo em tempo real para incentivar o autocadastro.
+2. **Central do Proponente (`/proponente`):** Painel orientador que instrui o usuário sobre o que o analista avaliará e disponibiliza modal interativo para submeter projetos de P&D diretamente à esteira técnica.
+
+---
+
+## 6. Comandos e Execução com Yarn
+
+Todos os scripts do projeto utilizam o gerenciador **Yarn**:
+
+```bash
+# Instalação das dependências
+yarn install
+
+# Desenvolvimento local (porta 43123)
+yarn dev
+
+# Compilação e verificação estática de tipos
+yarn build
+
+# Execução do build de produção
+yarn start
+
+# Linter de código
+yarn lint
+```
+
