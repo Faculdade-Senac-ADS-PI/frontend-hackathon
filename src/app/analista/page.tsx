@@ -1,220 +1,121 @@
 "use client";
 
-import { Badge, Dialog, NativeSelect } from "@chakra-ui/react";
-import { useMemo, useState } from "react";
+import { Dialog, NativeSelect } from "@chakra-ui/react";
+import { useEffect, useMemo, useState } from "react";
 import { BotaoPrimario, BotaoSecundario } from "@/components/botoes";
 import { Casca } from "@/components/casca";
-import { Aviso, EstadoVazio } from "@/components/estados";
-import { api, ErroApi } from "@/lib/api";
-
-export type StatusProposta = "nova" | "em_analise" | "elegivel" | "diligencia" | "inelegivel";
-export type AreaTecnologica = "Software & IA" | "Biotecnologia" | "Engenharia & Automação" | "Agrotech" | "Química";
-
-export type PropostaCRM = {
-  id: string;
-  protocolo: string;
-  empresa: string;
-  cnpj: string;
-  proponenteNome: string;
-  proponenteEmail: string;
-  tituloProjeto: string;
-  area: AreaTecnologica;
-  dispendioPrevisto: number;
-  incertezaDescricao: string;
-  metodologia: string;
-  status: StatusProposta;
-  dataSubmissao: string;
-  lucroReal: boolean;
-  cndAtiva: boolean;
-  parecerAnalista?: string;
-};
-
-const PROPOSTAS_INICIAIS: PropostaCRM[] = [
-  {
-    id: "prop-1",
-    protocolo: "PROP-2026-0101",
-    empresa: "LogiTech Nordeste Inovações S.A.",
-    cnpj: "14.283.910/0001-44",
-    proponenteNome: "Marina Costa",
-    proponenteEmail: "marina.costa@hackthon.dev",
-    tituloProjeto: "Algoritmo Heurístico de Otimização Termodinâmica para Cargas Perecíveis",
-    area: "Software & IA",
-    dispendioPrevisto: 850000,
-    incertezaDescricao: "Incerteza sobre a viabilidade de convergência matemática em tempo hábil para rotas com múltiplas variações térmicas locais sem suporte de modelos pré-existentes na literatura.",
-    metodologia: "Desenvolvimento experimental comparativo com 4 formulações matemáticas proprietárias e testes em câmara de vácuo simulada.",
-    status: "nova",
-    dataSubmissao: "06/10/2026",
-    lucroReal: true,
-    cndAtiva: true,
-  },
-  {
-    id: "prop-2",
-    protocolo: "PROP-2026-0102",
-    empresa: "BioPolímeros do Sertão Ltda",
-    cnpj: "08.771.204/0001-89",
-    proponenteNome: "Carlos Eduardo Mendes",
-    proponenteEmail: "carlos.mendes@biopolimeros.com.br",
-    tituloProjeto: "Síntese de Filme Biodegradável a partir do Mesocarpo do Caju",
-    area: "Biotecnologia",
-    dispendioPrevisto: 1420000,
-    incertezaDescricao: "Ausência de rotas químicas conhecidas para garantir elasticidade tênsil superior a 45 MPa mantendo biodegradação completa em menos de 90 dias em solo tropical.",
-    metodologia: "Delineamento composto central rotacional (DCCR) avaliando proporção de glicerol, pH e tempo de esterificação catalítica.",
-    status: "em_analise",
-    dataSubmissao: "04/10/2026",
-    lucroReal: true,
-    cndAtiva: true,
-    parecerAnalista: "Incerteza técnica inicial demonstrada. Aguardando laudos de tração em laboratório certificado.",
-  },
-  {
-    id: "prop-3",
-    protocolo: "PROP-2026-0103",
-    empresa: "Soluções AgroSolar Tech",
-    cnpj: "31.450.812/0001-02",
-    proponenteNome: "Beatriz Nogueira",
-    proponenteEmail: "beatriz@agrosolar.com.br",
-    tituloProjeto: "Módulo Fotovoltaico Bifacial com Revestimento Hidrofóbico Antirreflexo",
-    area: "Engenharia & Automação",
-    dispendioPrevisto: 680000,
-    incertezaDescricao: "Degradação fotoquímica precoce do polímero em ambiente de alta salinidade e incidência UV no litoral nordestino.",
-    metodologia: "Ensaios de envelhecimento acelerado em câmara de névoa salina ASTM B117 e espectroscopia Raman.",
-    status: "elegivel",
-    dataSubmissao: "01/10/2026",
-    lucroReal: true,
-    cndAtiva: true,
-    parecerAnalista: "Enquadrado no Art. 17 da Lei 11.196/05 como Desenvolvimento Experimental com superação de barreira técnica não trivial.",
-  },
-  {
-    id: "prop-4",
-    protocolo: "PROP-2026-0104",
-    empresa: "Varejo Express Nordeste S.A.",
-    cnpj: "22.901.340/0001-19",
-    proponenteNome: "Luciano Farias",
-    proponenteEmail: "luciano@varejoexpress.com.br",
-    tituloProjeto: "Migração de Sistema de Caixa Legado para Arquitetura de Microsserviços em Nuvem",
-    area: "Software & IA",
-    dispendioPrevisto: 390000,
-    incertezaDescricao: "Adaptação de banco de dados relacional legado e integração de mensageria com latência reduzida.",
-    metodologia: "Refatoração de código com framework comercial e parametrização de infraestrutura em nuvem.",
-    status: "inelegivel",
-    dataSubmissao: "28/09/2026",
-    lucroReal: true,
-    cndAtiva: true,
-    parecerAnalista: "Trabalho de engenharia e parametrização rotineira. Não há incerteza científica ou tecnológica nos termos do Manual de Frascati.",
-  },
-  {
-    id: "prop-5",
-    protocolo: "PROP-2026-0105",
-    empresa: "AgroSense Semiárido Sensores",
-    cnpj: "18.332.901/0001-71",
-    proponenteNome: "Fernanda Silveira",
-    proponenteEmail: "fernanda@agrosense.tech",
-    tituloProjeto: "Rede Mesh Subterrânea de Sensores de Umidade de Solo com Alimentação Piezoelétrica",
-    area: "Agrotech",
-    dispendioPrevisto: 940000,
-    incertezaDescricao: "Atenuação severa do sinal eletromagnético em solos argilosos compactados com teor de umidade variável.",
-    metodologia: "Modelagem eletromagnética tridimensional e testes de propagação de RF em faixas ISM sub-GHz.",
-    status: "nova",
-    dataSubmissao: "05/10/2026",
-    lucroReal: true,
-    cndAtiva: true,
-  },
-];
+import { Aviso, EstadoCarregando, EstadoVazio } from "@/components/estados";
+import {
+  corBadgeStatus,
+  deliberarProjeto,
+  formatarBytes,
+  obterFilaAnalise,
+  rotuloStatus,
+  type ProjetoAnaliseResposta,
+} from "@/lib/propostas-proponente";
 
 export default function Analista() {
-  const [propostas, setPropostas] = useState<PropostaCRM[]>(PROPOSTAS_INICIAIS);
+  const [propostas, setPropostas] = useState<ProjetoAnaliseResposta[]>([]);
+  const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState("");
   const [filtroStatus, setFiltroStatus] = useState<string>("todas");
-  const [filtroArea, setFiltroArea] = useState<string>("todas");
-  const [casoSelecionado, setCasoSelecionado] = useState<PropostaCRM | null>(null);
-  const [parecerTexto, setParecerTexto] = useState("");
-  const [novoStatus, setNovoStatus] = useState<StatusProposta>("em_analise");
+  const [filtroSetor, setFiltroSetor] = useState<string>("todas");
 
-  // Consulta IA / Agente
-  const [perguntaAgente, setPerguntaAgente] = useState("");
-  const [respostaAgente, setRespostaAgente] = useState("");
-  const [statusAgente, setStatusAgente] = useState<number | null>(null);
-  const [consultandoAgente, setConsultandoAgente] = useState(false);
+  // Dossiê selecionado para deliberação
+  const [casoSelecionado, setCasoSelecionado] = useState<ProjetoAnaliseResposta | null>(null);
+  const [decisao, setDecisao] = useState<"Aprovado" | "Reprovado" | "Reanalise">("Aprovado");
+  const [justificativa, setJustificativa] = useState("");
+  const [salvandoDecisao, setSalvandoDecisao] = useState(false);
   const [avisoSucesso, setAvisoSucesso] = useState("");
+  const [erroDecisao, setErroDecisao] = useState("");
+
+  useEffect(() => {
+    void carregarFila();
+  }, []);
+
+  async function carregarFila() {
+    setCarregando(true);
+    try {
+      const dados = await obterFilaAnalise();
+      setPropostas(dados);
+    } catch {
+      // Ignora falha inicial
+    } finally {
+      setCarregando(false);
+    }
+  }
 
   const metricas = useMemo(() => {
     const total = propostas.length;
-    const novas = propostas.filter((p) => p.status === "nova").length;
-    const emAnalise = propostas.filter((p) => p.status === "em_analise").length;
-    const elegiveis = propostas.filter((p) => p.status === "elegivel").length;
-    const diligencias = propostas.filter((p) => p.status === "diligencia" || p.status === "inelegivel").length;
-    const dispendioTotal = propostas.reduce((acc, cur) => acc + cur.dispendioPrevisto, 0);
-    const deducaoPotencial = dispendioTotal * 0.34; // 34% IRPJ/CSLL estimado no Lucro Real
-    return { total, novas, emAnalise, elegiveis, diligencias, dispendioTotal, deducaoPotencial };
+    const aguardando = propostas.filter((p) => p.status === "AguardandoAnalista").length;
+    const aprovadas = propostas.filter((p) => p.status === "Aprovado").length;
+    const reanalises = propostas.filter((p) => p.status === "Reanalise").length;
+    const reprovadas = propostas.filter((p) => p.status === "Reprovado").length;
+    return { total, aguardando, aprovadas, reanalises, reprovadas };
+  }, [propostas]);
+
+  const setoresDisponiveis = useMemo(() => {
+    const lista = Array.from(new Set(propostas.map((p) => p.setor).filter(Boolean)));
+    return lista.sort();
   }, [propostas]);
 
   const propostasFiltradas = useMemo(() => {
     return propostas.filter((p) => {
       const matchBusca =
-        p.empresa.toLowerCase().includes(busca.toLowerCase()) ||
-        p.tituloProjeto.toLowerCase().includes(busca.toLowerCase()) ||
-        p.proponenteNome.toLowerCase().includes(busca.toLowerCase()) ||
-        p.protocolo.toLowerCase().includes(busca.toLowerCase());
+        p.titulo.toLowerCase().includes(busca.toLowerCase()) ||
+        p.protocolo.toLowerCase().includes(busca.toLowerCase()) ||
+        p.setor.toLowerCase().includes(busca.toLowerCase()) ||
+        p.proponenteNome.toLowerCase().includes(busca.toLowerCase());
+
       const matchStatus = filtroStatus === "todas" ? true : p.status === filtroStatus;
-      const matchArea = filtroArea === "todas" ? true : p.area === filtroArea;
-      return matchBusca && matchStatus && matchArea;
+      const matchSetor = filtroSetor === "todas" ? true : p.setor === filtroSetor;
+
+      return matchBusca && matchStatus && matchSetor;
     });
-  }, [propostas, busca, filtroStatus, filtroArea]);
+  }, [propostas, busca, filtroStatus, filtroSetor]);
 
-  function abrirDossie(proposta: PropostaCRM) {
+  function abrirDossie(proposta: ProjetoAnaliseResposta) {
     setCasoSelecionado(proposta);
-    setParecerTexto(proposta.parecerAnalista || "");
-    setNovoStatus(proposta.status);
+    setDecisao("Aprovado");
+    setJustificativa(proposta.justificativaAnalista || "");
+    setErroDecisao("");
   }
 
-  function salvarParecer() {
+  async function executarDeliberacao() {
     if (!casoSelecionado) return;
-    setPropostas((antigas) =>
-      antigas.map((p) =>
-        p.id === casoSelecionado.id
-          ? { ...p, status: novoStatus, parecerAnalista: parecerTexto }
-          : p
-      )
-    );
-    setAvisoSucesso(`Parecer da proposta ${casoSelecionado.protocolo} atualizado para status "${rotuloStatus(novoStatus)}".`);
-    setCasoSelecionado(null);
-  }
+    setErroDecisao("");
 
-  async function testarAgente() {
-    if (!perguntaAgente.trim()) return;
-    setConsultandoAgente(true);
-    setRespostaAgente("");
-    setStatusAgente(null);
+    if (decisao !== "Aprovado" && !justificativa.trim()) {
+      setErroDecisao("Explique o motivo da reprovação ou o que o proponente deve revisar para a reanálise.");
+      return;
+    }
+
+    setSalvandoDecisao(true);
     try {
-      const resp = await api<{ resposta?: string }>("/api/agente/consulta", {
-        method: "POST",
-        body: JSON.stringify({ pergunta: perguntaAgente }),
-      });
-      setRespostaAgente(resp?.resposta || "Resposta recebida com sucesso.");
-      setStatusAgente(200);
-    } catch (err) {
-      if (err instanceof ErroApi) {
-        setStatusAgente(err.status);
-        setRespostaAgente(
-          err.status === 501
-            ? "HTTP 501 (Not Implemented): O contrato do agente está ativo e protegido, aguardando conexão com pgvector e provedor de LLM na camada de infraestrutura."
-            : err.message
-        );
-      } else {
-        setRespostaAgente("Erro ao conectar com o serviço do agente.");
-      }
+      const atualizado = await deliberarProjeto(casoSelecionado.id, decisao, justificativa.trim() || undefined);
+      setPropostas((antigas) =>
+        antigas.map((p) => (p.id === atualizado.id ? atualizado : p))
+      );
+      setAvisoSucesso(
+        `Proposta ${atualizado.protocolo} deliberada com sucesso como "${rotuloStatus(atualizado.status)}".`
+      );
+      setCasoSelecionado(null);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao registrar a deliberação.";
+      setErroDecisao(msg);
     } finally {
-      setConsultandoAgente(false);
+      setSalvandoDecisao(false);
     }
   }
 
   return (
     <Casca
-      titulo="CRM do Analista — Esteira Lei do Bem"
-      descricao="Gestão e análise preliminar de elegibilidade dos projetos submetidos pela equipe de P&D e proponentes."
+      titulo="Fila de Análise Técnica — Lei do Bem"
+      descricao="Avalie as propostas de inovação submetidas pelos proponentes. Consulte o resumo e a pontuação nos 5 critérios de Frascati gerados pelo Agente de IA para aprovar, reprovar ou solicitar reanálise."
       larguraMaxima="max-w-7xl"
       acoes={
-        <BotaoSecundario type="button" onClick={() => setAvisoSucesso("Fila de propostas sincronizada com sucesso.")}>
-          Sincronizar Fila
+        <BotaoSecundario type="button" onClick={() => void carregarFila()}>
+          Atualizar Fila
         </BotaoSecundario>
       }
     >
@@ -224,66 +125,63 @@ export default function Analista() {
             <Aviso tipo="success" texto={avisoSucesso} />
           ) : null}
 
-          {/* KPI Summary Cards no estilo CRM Neumorphic */}
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5" aria-label="Métricas do Pipeline">
+          {/* KPI Cards */}
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5" aria-label="Métricas da Esteira">
             <div className="neo flex flex-col justify-between p-4 sm:p-5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Fila de Triagem</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Aguardando Análise</span>
               <div className="mt-2 flex items-baseline justify-between">
-                <span className="font-display text-3xl font-bold text-[#2C3138]">{metricas.novas}</span>
-                <span className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">Aguardando</span>
+                <span className="font-display text-3xl font-bold text-amber-700">{metricas.aguardando}</span>
+                <span className="text-xs font-medium text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">Fila</span>
               </div>
-              <p className="mt-2 text-xs text-[#5E6570]">Casos sem parecer inicial</p>
+              <p className="mt-2 text-xs text-[#5E6570]">Propostas prontas para deliberação</p>
             </div>
 
             <div className="neo flex flex-col justify-between p-4 sm:p-5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Em Análise Técnica</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Aprovadas</span>
               <div className="mt-2 flex items-baseline justify-between">
-                <span className="font-display text-3xl font-bold text-[#8E1218]">{metricas.emAnalise}</span>
-                <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">Em revisão</span>
-              </div>
-              <p className="mt-2 text-xs text-[#5E6570]">Verificação de não-rotina</p>
-            </div>
-
-            <div className="neo flex flex-col justify-between p-4 sm:p-5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Pré-Enquadrados</span>
-              <div className="mt-2 flex items-baseline justify-between">
-                <span className="font-display text-3xl font-bold text-emerald-700">{metricas.elegiveis}</span>
+                <span className="font-display text-3xl font-bold text-emerald-700">{metricas.aprovadas}</span>
                 <span className="text-xs font-medium text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">Elegíveis</span>
               </div>
-              <p className="mt-2 text-xs text-[#5E6570]">Incerteza comprovada</p>
+              <p className="mt-2 text-xs text-[#5E6570]">Atendem aos 5 critérios Frascati</p>
             </div>
 
             <div className="neo flex flex-col justify-between p-4 sm:p-5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Diligências / Inelegíveis</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Reanálises</span>
               <div className="mt-2 flex items-baseline justify-between">
-                <span className="font-display text-3xl font-bold text-[#5E6570]">{metricas.diligencias}</span>
-                <span className="text-xs font-medium text-gray-700 bg-gray-200 px-2 py-0.5 rounded-full">Rotina/Dúvida</span>
+                <span className="font-display text-3xl font-bold text-purple-700">{metricas.reanalises}</span>
+                <span className="text-xs font-medium text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full">Revisão</span>
               </div>
-              <p className="mt-2 text-xs text-[#5E6570]">Ajuste ou rejeição</p>
+              <p className="mt-2 text-xs text-[#5E6570]">Aguardando novo PDF do proponente</p>
             </div>
 
             <div className="neo flex flex-col justify-between p-4 sm:p-5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Volume P&D na Fila</span>
-              <div className="mt-2">
-                <span className="font-display text-2xl font-bold text-[#2C3138]">
-                  {formatarMoeda(metricas.dispendioTotal)}
-                </span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Reprovadas</span>
+              <div className="mt-2 flex items-baseline justify-between">
+                <span className="font-display text-3xl font-bold text-red-700">{metricas.reprovadas}</span>
+                <span className="text-xs font-medium text-red-800 bg-red-100 px-2 py-0.5 rounded-full">Inaptas</span>
               </div>
-              <p className="mt-2 text-xs font-medium text-emerald-700">
-                Economia est.: {formatarMoeda(metricas.deducaoPotencial)}
-              </p>
+              <p className="mt-2 text-xs text-[#5E6570]">Projetos fora do escopo da lei</p>
+            </div>
+
+            <div className="neo flex flex-col justify-between p-4 sm:p-5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Total de Propostas</span>
+              <div className="mt-2 flex items-baseline justify-between">
+                <span className="font-display text-3xl font-bold text-[#2C3138]">{metricas.total}</span>
+                <span className="text-xs font-medium text-slate-700 bg-slate-200 px-2 py-0.5 rounded-full">Todas</span>
+              </div>
+              <p className="mt-2 text-xs text-[#5E6570]">Volume acumulado no sistema</p>
             </div>
           </section>
 
-          {/* CRM Toolbar: Busca e Filtros Neumorphic */}
+          {/* Busca e Filtros */}
           <section className="neo flex flex-col gap-4 p-5 sm:p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex-1 min-w-0">
-                <label htmlFor="busca-crm" className="sr-only">Buscar no CRM</label>
+                <label htmlFor="busca-analista" className="sr-only">Buscar proposta</label>
                 <input
-                  id="busca-crm"
+                  id="busca-analista"
                   type="text"
-                  placeholder="Pesquisar por empresa, proponente, projeto ou protocolo..."
+                  placeholder="Pesquisar por título, protocolo, setor ou proponente..."
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
                   className="neo-inset w-full px-4 py-2.5 text-sm placeholder:text-[#8E95A2]"
@@ -291,45 +189,46 @@ export default function Analista() {
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <div className="w-44">
+                <div className="w-52">
                   <NativeSelect.Root size="sm" width="full">
                     <NativeSelect.Field
-                      aria-label="Filtro por status da proposta"
+                      aria-label="Filtro por status"
                       value={filtroStatus}
                       onChange={(e) => setFiltroStatus(e.target.value)}
                     >
                       <option value="todas">Todos os Status</option>
-                      <option value="nova">Fila Nova</option>
-                      <option value="em_analise">Em Análise</option>
-                      <option value="elegivel">Elegíveis</option>
-                      <option value="diligencia">Diligências</option>
-                      <option value="inelegivel">Inelegíveis</option>
+                      <option value="AguardandoAnalista">Aguardando Analista</option>
+                      <option value="Aprovado">Aprovadas</option>
+                      <option value="Reanalise">Reanálise Solicitada</option>
+                      <option value="Reprovado">Reprovadas</option>
                     </NativeSelect.Field>
                     <NativeSelect.Indicator />
                   </NativeSelect.Root>
                 </div>
 
-                <div className="w-48">
-                  <NativeSelect.Root size="sm" width="full">
-                    <NativeSelect.Field
-                      aria-label="Filtro por área tecnológica"
-                      value={filtroArea}
-                      onChange={(e) => setFiltroArea(e.target.value)}
-                    >
-                      <option value="todas">Todas as Áreas</option>
-                      <option value="Software & IA">Software & IA</option>
-                      <option value="Biotecnologia">Biotecnologia</option>
-                      <option value="Engenharia & Automação">Engenharia & Automação</option>
-                      <option value="Agrotech">Agrotech</option>
-                      <option value="Química">Química</option>
-                    </NativeSelect.Field>
-                    <NativeSelect.Indicator />
-                  </NativeSelect.Root>
-                </div>
+                {setoresDisponiveis.length > 0 ? (
+                  <div className="w-56">
+                    <NativeSelect.Root size="sm" width="full">
+                      <NativeSelect.Field
+                        aria-label="Filtro por setor"
+                        value={filtroSetor}
+                        onChange={(e) => setFiltroSetor(e.target.value)}
+                      >
+                        <option value="todas">Todos os Setores</option>
+                        {setoresDisponiveis.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </NativeSelect.Field>
+                      <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                  </div>
+                ) : null}
               </div>
             </div>
 
-            {/* Abas Rápidas estilo CRM Pipeline */}
+            {/* Abas Rápidas */}
             <div className="flex flex-wrap items-center gap-2 border-t border-[#D9DCE3] pt-4">
               <button
                 type="button"
@@ -342,262 +241,360 @@ export default function Analista() {
               </button>
               <button
                 type="button"
-                onClick={() => setFiltroStatus("nova")}
+                onClick={() => setFiltroStatus("AguardandoAnalista")}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                  filtroStatus === "nova" ? "btn-red text-white" : "btn-quiet text-[#5E6570]"
+                  filtroStatus === "AguardandoAnalista" ? "btn-red text-white" : "btn-quiet text-[#5E6570]"
                 }`}
               >
-                Novas ({metricas.novas})
+                Aguardando ({metricas.aguardando})
               </button>
               <button
                 type="button"
-                onClick={() => setFiltroStatus("em_analise")}
+                onClick={() => setFiltroStatus("Aprovado")}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                  filtroStatus === "em_analise" ? "btn-red text-white" : "btn-quiet text-[#5E6570]"
+                  filtroStatus === "Aprovado" ? "btn-red text-white" : "btn-quiet text-[#5E6570]"
                 }`}
               >
-                Em Análise ({metricas.emAnalise})
+                Aprovadas ({metricas.aprovadas})
               </button>
               <button
                 type="button"
-                onClick={() => setFiltroStatus("elegivel")}
+                onClick={() => setFiltroStatus("Reanalise")}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                  filtroStatus === "elegivel" ? "btn-red text-white" : "btn-quiet text-[#5E6570]"
+                  filtroStatus === "Reanalise" ? "btn-red text-white" : "btn-quiet text-[#5E6570]"
                 }`}
               >
-                Elegíveis ({metricas.elegiveis})
+                Reanálises ({metricas.reanalises})
               </button>
               <button
                 type="button"
-                onClick={() => setFiltroStatus("inelegivel")}
+                onClick={() => setFiltroStatus("Reprovado")}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                  filtroStatus === "inelegivel" ? "btn-red text-white" : "btn-quiet text-[#5E6570]"
+                  filtroStatus === "Reprovado" ? "btn-red text-white" : "btn-quiet text-[#5E6570]"
                 }`}
               >
-                Inelegíveis ({metricas.diligencias})
+                Reprovadas ({metricas.reprovadas})
               </button>
             </div>
           </section>
 
-          {/* Lista de Casos do Pipeline CRM */}
+          {/* Lista de Propostas da Fila */}
           <section className="flex flex-col gap-4">
-            {propostasFiltradas.length === 0 ? (
+            {carregando ? (
+              <EstadoCarregando texto="Carregando fila de propostas..." />
+            ) : propostasFiltradas.length === 0 ? (
               <EstadoVazio
-                titulo="Nenhum caso encontrado com os filtros atuais"
-                texto="Altere os termos de pesquisa ou redefina os filtros para visualizar outras propostas de inovação."
+                titulo="Nenhuma proposta encontrada na fila"
+                texto="Não há propostas cadastradas com os filtros selecionados."
               />
             ) : (
               <div className="grid gap-4">
-                {propostasFiltradas.map((proposta) => (
-                  <article
-                    key={proposta.id}
-                    className="neo flex flex-col justify-between gap-4 p-5 transition-shadow hover:shadow-[10px_10px_22px_#c2c5ce,-10px_-10px_22px_#ffffff] md:p-6"
-                  >
-                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                      <div className="space-y-1.5">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-[#C4161C] bg-red-50 px-2 py-0.5 rounded border border-red-200">
-                            {proposta.protocolo}
-                          </span>
-                          <span className="text-xs text-[#5E6570]">Submetido em {proposta.dataSubmissao}</span>
-                          <span className="text-xs font-medium text-slate-700 bg-slate-200 px-2 py-0.5 rounded-full">
-                            {proposta.area}
-                          </span>
-                          <Badge
-                            colorPalette={statusCor(proposta.status)}
-                            variant="subtle"
-                            px="2.5"
-                            py="0.5"
-                            borderRadius="md"
-                          >
-                            {rotuloStatus(proposta.status)}
-                          </Badge>
-                        </div>
-                        <h3 className="font-display text-xl font-bold text-[#2C3138]">{proposta.tituloProjeto}</h3>
-                        <p className="text-sm font-semibold text-[#5E6570]">
-                          {proposta.empresa} <span className="font-normal text-xs text-[#8E95A2]">({proposta.cnpj})</span>
-                          {" · "}
-                          <span className="font-normal text-xs">Resp: {proposta.proponenteNome}</span>
-                        </p>
-                      </div>
+                {propostasFiltradas.map((prop) => {
+                  const badge = corBadgeStatus(prop.status);
+                  const nota = prop.notaIa;
+                  const corNota =
+                    nota !== null && nota !== undefined
+                      ? nota >= 75
+                        ? "text-emerald-700 bg-emerald-50 border-emerald-300"
+                        : nota >= 50
+                        ? "text-amber-700 bg-amber-50 border-amber-300"
+                        : "text-red-700 bg-red-50 border-red-300"
+                      : "text-gray-600 bg-gray-50 border-gray-200";
 
-                      <div className="flex flex-row lg:flex-col items-end justify-between shrink-0 lg:text-right gap-1 border-t lg:border-t-0 pt-2 lg:pt-0 border-gray-200">
-                        <div>
-                          <p className="text-xs text-[#5E6570]">Dispêndio Estimado P&D</p>
-                          <p className="font-display text-lg font-bold text-[#2C3138]">
-                            {formatarMoeda(proposta.dispendioPrevisto)}
+                  return (
+                    <article
+                      key={prop.id}
+                      className="neo flex flex-col justify-between gap-4 p-5 transition-shadow hover:shadow-[10px_10px_22px_#c2c5ce,-10px_-10px_22px_#ffffff] md:p-6"
+                    >
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="space-y-1.5">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-[#C4161C] bg-red-50 px-2 py-0.5 rounded border border-red-200">
+                              {prop.protocolo}
+                            </span>
+                            <span className="text-xs text-[#5E6570]">
+                              Submetido em {new Date(prop.criadoEm).toLocaleDateString("pt-BR")}
+                            </span>
+                            <span className="text-xs font-medium text-slate-700 bg-slate-200 px-2 py-0.5 rounded-full">
+                              {prop.setor}
+                            </span>
+                            <span
+                              className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${badge.bg} ${badge.text} ${badge.border}`}
+                            >
+                              {rotuloStatus(prop.status)}
+                            </span>
+                          </div>
+
+                          <h3 className="font-display text-xl font-bold text-[#2C3138]">{prop.titulo}</h3>
+                          <p className="text-xs text-[#5E6570]">
+                            Proponente: <strong>{prop.proponenteNome}</strong> ({prop.proponenteEmail}) · Versão {prop.versaoEnvio}
                           </p>
                         </div>
-                        <p className="text-xs font-medium text-emerald-700">
-                          Benefício est.: {formatarMoeda(proposta.dispendioPrevisto * 0.34)}
-                        </p>
-                      </div>
-                    </div>
 
-                    <div className="neo-inset p-3.5 text-sm">
-                      <p className="text-xs font-bold uppercase tracking-wider text-[#8E1218]">
-                        Incerteza Tecnológica (Não-Rotina):
-                      </p>
-                      <p className="mt-1 line-clamp-2 text-[#4A515C] leading-relaxed">
-                        {proposta.incertezaDescricao}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#D9DCE3] pt-3">
-                      <div className="flex items-center gap-2 text-xs text-[#5E6570]">
-                        <span className={`inline-block w-2 h-2 rounded-full ${proposta.lucroReal ? "bg-emerald-500" : "bg-red-500"}`} />
-                        <span>Lucro Real: {proposta.lucroReal ? "Confirmado" : "Não"}</span>
-                        {" · "}
-                        <span className={`inline-block w-2 h-2 rounded-full ${proposta.cndAtiva ? "bg-emerald-500" : "bg-red-500"}`} />
-                        <span>CND: {proposta.cndAtiva ? "Válida" : "Pendente"}</span>
+                        {/* Placar de Nota da IA */}
+                        <div className="flex flex-row lg:flex-col items-end justify-between shrink-0 lg:text-right gap-1 border-t lg:border-t-0 pt-2 lg:pt-0 border-gray-200">
+                          <div>
+                            <p className="text-[11px] text-[#5E6570] uppercase font-bold">Nota Agente IA</p>
+                            <div className="flex items-center gap-2">
+                              <span className={`font-display text-2xl font-bold px-2 py-0.5 rounded border ${corNota}`}>
+                                {nota !== null && nota !== undefined ? `${nota}/100` : "Pendente"}
+                              </span>
+                            </div>
+                          </div>
+                          {prop.recomendacaoIa ? (
+                            <p className="text-xs font-semibold text-[#2C3138] mt-1">
+                              {prop.recomendacaoIa}
+                            </p>
+                          ) : null}
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <BotaoPrimario type="button" onClick={() => abrirDossie(proposta)}>
-                          Abrir Dossiê 360°
-                        </BotaoPrimario>
+                      {/* Resumo da IA */}
+                      {prop.resumoIa ? (
+                        <div className="neo-inset p-3.5 text-xs text-[#4A515C] space-y-1">
+                          <strong className="text-[#8E1218]">Resumo do Projeto (Elaborado pelo Agente de IA):</strong>
+                          <p className="leading-relaxed line-clamp-3">{prop.resumoIa}</p>
+                        </div>
+                      ) : null}
+
+                      {/* Critérios resumidos */}
+                      {prop.criterios && prop.criterios.length > 0 ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+                          {prop.criterios.map((c) => (
+                            <div key={c.chave} className="neo-inset p-2 text-center">
+                              <span className="text-[10px] text-[#5E6570] block font-semibold truncate">{c.nome}</span>
+                              <span className="font-mono text-xs font-bold text-[#2C3138]">
+                                {c.nota !== null && c.nota !== undefined ? `${c.nota}/${c.notaMaxima}` : "—"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+
+                      {/* Ações */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#D9DCE3] pt-3">
+                        <div className="flex items-center gap-2 text-xs text-[#5E6570]">
+                          <a
+                            href={`/api/projetos/${prop.id}/arquivo`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-[#8E1218] hover:underline inline-flex items-center gap-1"
+                          >
+                            📄 {prop.nomeArquivo} ({formatarBytes(prop.tamanhoBytes)})
+                          </a>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <BotaoPrimario type="button" onClick={() => abrirDossie(prop)}>
+                            Abrir Dossiê & Deliberar →
+                          </BotaoPrimario>
+                        </div>
                       </div>
-                    </div>
-                  </article>
-                ))}
+                    </article>
+                  );
+                })}
               </div>
             )}
           </section>
 
-          {/* Assistente de Normas e IA (RAG) */}
-          <section className="neo p-5 sm:p-6">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="font-display text-xl text-[#2C3138]">Consulta às Normas com IA (RAG)</h2>
-                <p className="text-sm text-[#5E6570]">
-                  Consulte os parâmetros do Manual de Frascati e Lei 11.196/05 integrados à API da aplicação.
-                </p>
-              </div>
-              <span className="text-xs font-mono bg-amber-100 text-amber-800 px-2 py-1 rounded">
-                API: /api/agente/consulta
-              </span>
-            </div>
-
-            <div className="mt-4 flex flex-col gap-3">
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="text"
-                  placeholder="Ex: Qual o critério para considerar software como desenvolvimento experimental?"
-                  value={perguntaAgente}
-                  onChange={(e) => setPerguntaAgente(e.target.value)}
-                  className="neo-inset flex-1 px-4 py-2.5 text-sm"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") void testarAgente();
-                  }}
-                />
-                <BotaoPrimario
-                  type="button"
-                  loading={consultandoAgente}
-                  loadingText="Consultando..."
-                  onClick={() => void testarAgente()}
-                  disabled={!perguntaAgente.trim()}
-                >
-                  Consultar Agente
-                </BotaoPrimario>
-              </div>
-
-              {respostaAgente ? (
-                <div className="neo-inset p-4 text-sm mt-2">
-                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#D9DCE3]">
-                    <span className="font-semibold text-xs uppercase tracking-wide text-[#2C3138]">
-                      Retorno do Agente
-                    </span>
-                    {statusAgente !== null ? (
-                      <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded ${statusAgente === 200 ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>
-                        HTTP {statusAgente}
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="text-[#2C3138] leading-relaxed whitespace-pre-wrap">{respostaAgente}</p>
-                </div>
-              ) : null}
-            </div>
-          </section>
-
-          {/* Modal / Painel 360° do Dossiê do Caso */}
+          {/* Modal / Painel do Dossiê Completo e Deliberação */}
           <Dialog.Root open={casoSelecionado !== null} onOpenChange={(d) => !d.open && setCasoSelecionado(null)}>
             <Dialog.Backdrop />
             <Dialog.Positioner p="4">
-              <Dialog.Content className="neo" bg="#F3F4F7" w="full" maxW="2xl" maxH="90vh" overflowY="auto">
+              <Dialog.Content className="neo" bg="#F3F4F7" w="full" maxW="3xl" maxH="90vh" overflowY="auto">
                 <Dialog.Header>
                   <div className="flex items-center justify-between w-full">
                     <div>
                       <span className="text-xs font-mono text-[#C4161C] font-bold">{casoSelecionado?.protocolo}</span>
-                      <Dialog.Title className="font-display text-2xl mt-1">Dossiê de Avaliação Preliminar</Dialog.Title>
+                      <Dialog.Title className="font-display text-2xl mt-1">
+                        Dossiê de Avaliação de P&D (Lei do Bem)
+                      </Dialog.Title>
                     </div>
                   </div>
                 </Dialog.Header>
 
-                <Dialog.Body className="space-y-5">
+                <Dialog.Body className="space-y-6">
                   {casoSelecionado ? (
                     <>
+                      {erroDecisao ? <Aviso tipo="error" texto={erroDecisao} /> : null}
+
+                      {/* Identificação */}
                       <div className="neo-inset p-4 space-y-2">
-                        <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-start gap-2">
                           <div>
-                            <h4 className="font-bold text-base text-[#2C3138]">{casoSelecionado.empresa}</h4>
-                            <p className="text-xs text-[#5E6570]">CNPJ: {casoSelecionado.cnpj} · Resp: {casoSelecionado.proponenteNome} ({casoSelecionado.proponenteEmail})</p>
+                            <h4 className="font-bold text-base text-[#2C3138]">{casoSelecionado.titulo}</h4>
+                            <p className="text-xs text-[#5E6570] mt-0.5">
+                              Setor: <strong>{casoSelecionado.setor}</strong> · Proponente:{" "}
+                              <strong>{casoSelecionado.proponenteNome}</strong> ({casoSelecionado.proponenteEmail})
+                            </p>
                           </div>
-                          <Badge colorPalette={statusCor(casoSelecionado.status)} variant="subtle">
+                          <span
+                            className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
+                              corBadgeStatus(casoSelecionado.status).bg
+                            } ${corBadgeStatus(casoSelecionado.status).text} ${
+                              corBadgeStatus(casoSelecionado.status).border
+                            }`}
+                          >
                             {rotuloStatus(casoSelecionado.status)}
-                          </Badge>
+                          </span>
                         </div>
-                        <div className="pt-2 border-t border-[#D9DCE3] flex justify-between text-xs text-[#5E6570]">
-                          <span>Dispêndio: <strong>{formatarMoeda(casoSelecionado.dispendioPrevisto)}</strong></span>
-                          <span>Economia IRPJ/CSLL: <strong>{formatarMoeda(casoSelecionado.dispendioPrevisto * 0.34)}</strong></span>
-                          <span>Regime: <strong>Lucro Real</strong></span>
+
+                        <div className="pt-2 border-t border-[#D9DCE3] flex flex-wrap items-center justify-between gap-2 text-xs">
+                          <span className="text-[#5E6570]">
+                            Arquivo: <strong className="font-mono">{casoSelecionado.nomeArquivo}</strong> (
+                            {formatarBytes(casoSelecionado.tamanhoBytes)}) · {casoSelecionado.versaoEnvio}ª versão
+                          </span>
+                          <a
+                            href={`/api/projetos/${casoSelecionado.id}/arquivo`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-neo text-xs px-2.5 py-1 text-[#8E1218] font-bold"
+                          >
+                            📥 Baixar / Visualizar PDF
+                          </a>
                         </div>
                       </div>
 
-                      <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#8E1218]">Projeto de Inovação</h4>
-                        <p className="text-sm font-semibold text-[#2C3138] mt-1">{casoSelecionado.tituloProjeto}</p>
-                      </div>
+                      {/* Avaliação do Agente de IA */}
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-[#8E1218]">
+                            Avaliação pelo Agente de IA (5 Critérios do Manual de Frascati)
+                          </h4>
+                          {casoSelecionado.origemAnaliseIa ? (
+                            <span className="text-[10px] font-mono text-slate-500 bg-slate-200 px-2 py-0.5 rounded">
+                              Origem: {casoSelecionado.origemAnaliseIa}
+                            </span>
+                          ) : null}
+                        </div>
 
-                      <div className="space-y-3">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#8E1218]">Critérios do Manual de Frascati</h4>
-                        <div className="neo-inset p-3.5 space-y-2 text-xs">
+                        {/* Placar Geral */}
+                        <div className="neo-inset p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
                           <div>
-                            <strong className="text-[#2C3138]">1. Incerteza Científica/Tecnológica:</strong>
-                            <p className="text-[#4A515C] mt-0.5">{casoSelecionado.incertezaDescricao}</p>
+                            <span className="text-xs text-[#5E6570] font-semibold uppercase">Nota Global de Elegibilidade</span>
+                            <div className="flex items-baseline gap-2 mt-0.5">
+                              <span className="font-display text-3xl font-bold text-[#2C3138]">
+                                {casoSelecionado.notaIa !== null && casoSelecionado.notaIa !== undefined
+                                  ? casoSelecionado.notaIa
+                                  : "—"}
+                              </span>
+                              <span className="text-sm text-[#5E6570]">/ 100 pontos</span>
+                            </div>
                           </div>
-                          <div className="pt-2 border-t border-[#D9DCE3]">
-                            <strong className="text-[#2C3138]">2. Metodologia Sistemática & Rastro:</strong>
-                            <p className="text-[#4A515C] mt-0.5">{casoSelecionado.metodologia}</p>
+
+                          <div className="sm:text-right">
+                            <span className="text-xs text-[#5E6570] font-semibold uppercase">Recomendação da IA</span>
+                            <p className="font-bold text-base text-emerald-800 mt-0.5">
+                              {casoSelecionado.recomendacaoIa || "Aguardando"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Resumo da IA */}
+                        {casoSelecionado.resumoIa ? (
+                          <div className="neo-inset p-3.5 space-y-1 text-xs">
+                            <strong className="text-[#2C3138]">Resumo Técnico da Proposta:</strong>
+                            <p className="text-[#4A515C] leading-relaxed whitespace-pre-wrap">{casoSelecionado.resumoIa}</p>
+                          </div>
+                        ) : null}
+
+                        {/* Parecer Sintético da IA */}
+                        {casoSelecionado.parecerIa ? (
+                          <div className="neo-inset p-3.5 space-y-1 text-xs bg-slate-100/50">
+                            <strong className="text-[#2C3138]">Parecer Sintético da IA:</strong>
+                            <p className="text-[#4A515C] leading-relaxed">{casoSelecionado.parecerIa}</p>
+                          </div>
+                        ) : null}
+
+                        {/* Os 5 Critérios Detalhados (0 a 20 cada) */}
+                        <div className="space-y-3">
+                          <span className="text-xs font-bold text-[#2C3138] uppercase">Detalhamento por Critério:</span>
+                          <div className="grid gap-3">
+                            {casoSelecionado.criterios?.map((c, i) => (
+                              <div key={c.chave} className="neo-inset p-3.5 space-y-1.5 text-xs">
+                                <div className="flex items-center justify-between">
+                                  <strong className="text-[#8E1218]">
+                                    {i + 1}. {c.nome}
+                                  </strong>
+                                  <span className="font-mono font-bold text-sm text-[#2C3138] bg-white px-2 py-0.5 rounded border border-[#D9DCE3]">
+                                    {c.nota !== null && c.nota !== undefined ? `${c.nota} / ${c.notaMaxima} pts` : "—"}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-[#5E6570] italic">{c.descricao}</p>
+                                {c.justificativa ? (
+                                  <div className="pt-1.5 border-t border-[#D9DCE3]">
+                                    <span className="font-semibold text-[#2C3138]">Análise da IA: </span>
+                                    <span className="text-[#4A515C]">{c.justificativa}</span>
+                                  </div>
+                                ) : null}
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </div>
 
-                      <div className="space-y-3">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#8E1218]">Parecer do Analista</h4>
+                      {/* Deliberação do Analista Humano */}
+                      <div className="space-y-4 pt-3 border-t border-[#D9DCE3]">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#8E1218]">
+                          Deliberação Técnica do Analista
+                        </h4>
+
                         <div className="space-y-2">
-                          <label className="text-xs text-[#5E6570]">Status da Avaliação</label>
-                          <NativeSelect.Root size="sm" width="full">
-                            <NativeSelect.Field
-                              value={novoStatus}
-                              onChange={(e) => setNovoStatus(e.target.value as StatusProposta)}
+                          <label className="text-xs font-semibold text-[#5E6570]">Decisão da Avaliação</label>
+                          <div className="grid grid-cols-3 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setDecisao("Aprovado")}
+                              className={`p-3 rounded-lg text-xs font-bold text-center border transition-all ${
+                                decisao === "Aprovado"
+                                  ? "bg-emerald-600 text-white border-emerald-700 shadow-inner"
+                                  : "bg-white text-emerald-800 border-emerald-200 hover:bg-emerald-50"
+                              }`}
                             >
-                              <option value="nova">Fila Nova (Aguardando)</option>
-                              <option value="em_analise">Em Análise Técnica</option>
-                              <option value="elegivel">Classificar como Elegível</option>
-                              <option value="diligencia">Solicitar Diligência / Documentos</option>
-                              <option value="inelegivel">Classificar como Inelegível (Rotina)</option>
-                            </NativeSelect.Field>
-                            <NativeSelect.Indicator />
-                          </NativeSelect.Root>
+                              ✓ Aprovar Projeto
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDecisao("Reanalise")}
+                              className={`p-3 rounded-lg text-xs font-bold text-center border transition-all ${
+                                decisao === "Reanalise"
+                                  ? "bg-purple-600 text-white border-purple-700 shadow-inner"
+                                  : "bg-white text-purple-800 border-purple-200 hover:bg-purple-50"
+                              }`}
+                            >
+                              🔄 Solicitar Reanálise
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDecisao("Reprovado")}
+                              className={`p-3 rounded-lg text-xs font-bold text-center border transition-all ${
+                                decisao === "Reprovado"
+                                  ? "bg-red-600 text-white border-red-700 shadow-inner"
+                                  : "bg-white text-red-800 border-red-200 hover:bg-red-50"
+                              }`}
+                            >
+                              ✕ Reprovar Projeto
+                            </button>
+                          </div>
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-xs text-[#5E6570]">Justificativa Técnica e Fundamentação</label>
+                          <label htmlFor="justificativa-analista" className="text-xs font-semibold text-[#5E6570]">
+                            Parecer / Justificativa do Analista{" "}
+                            {decisao !== "Aprovado" ? <span className="text-[#C4161C]">* (obrigatório)</span> : null}
+                          </label>
                           <textarea
-                            rows={3}
-                            value={parecerTexto}
-                            onChange={(e) => setParecerTexto(e.target.value)}
-                            placeholder="Descreva a fundamentação técnica conforme o Art. 17 da Lei 11.196/05 ou aponte se enquadra em mero trabalho de rotina..."
+                            id="justificativa-analista"
+                            rows={4}
+                            value={justificativa}
+                            onChange={(e) => setJustificativa(e.target.value)}
+                            placeholder={
+                              decisao === "Aprovado"
+                                ? "Observações ou comentários adicionais sobre o enquadramento do projeto..."
+                                : decisao === "Reanalise"
+                                ? "Indique claramente o que o proponente deve revisar ou complementar no novo PDF..."
+                                : "Indique a fundamentação técnica para a reprovação da proposta..."
+                            }
                             className="neo-inset w-full p-3 text-xs leading-relaxed"
                           />
                         </div>
@@ -608,10 +605,15 @@ export default function Analista() {
 
                 <Dialog.Footer className="flex flex-wrap gap-2">
                   <BotaoSecundario type="button" onClick={() => setCasoSelecionado(null)}>
-                    Fechar
+                    Cancelar
                   </BotaoSecundario>
-                  <BotaoPrimario type="button" onClick={salvarParecer}>
-                    Gravar Decisão no CRM
+                  <BotaoPrimario
+                    type="button"
+                    loading={salvandoDecisao}
+                    loadingText="Gravando Deliberação..."
+                    onClick={() => void executarDeliberacao()}
+                  >
+                    Confirmar Decisão no Sistema →
                   </BotaoPrimario>
                 </Dialog.Footer>
               </Dialog.Content>
@@ -621,42 +623,4 @@ export default function Analista() {
       )}
     </Casca>
   );
-}
-
-function formatarMoeda(valor: number) {
-  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
-function rotuloStatus(status: StatusProposta) {
-  switch (status) {
-    case "nova":
-      return "Nova Proposta";
-    case "em_analise":
-      return "Em Análise";
-    case "elegivel":
-      return "Elegível";
-    case "diligencia":
-      return "Diligência";
-    case "inelegivel":
-      return "Inelegível (Rotina)";
-    default:
-      return status;
-  }
-}
-
-function statusCor(status: StatusProposta) {
-  switch (status) {
-    case "nova":
-      return "blue";
-    case "em_analise":
-      return "yellow";
-    case "elegivel":
-      return "green";
-    case "diligencia":
-      return "orange";
-    case "inelegivel":
-      return "gray";
-    default:
-      return "gray";
-  }
 }

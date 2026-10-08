@@ -33,7 +33,15 @@ export function EstadoErro({ texto, onTentar }: { texto: string; onTentar?: () =
   );
 }
 
-export function EstadoVazio({ titulo, texto }: { titulo: string; texto: string }) {
+export function EstadoVazio({
+  titulo,
+  texto,
+  children,
+}: {
+  titulo: string;
+  texto: string;
+  children?: React.ReactNode;
+}) {
   return (
     <EmptyState.Root className="neo-inset px-4 py-8 sm:px-6 sm:py-10">
       <EmptyState.Content>
@@ -41,6 +49,7 @@ export function EstadoVazio({ titulo, texto }: { titulo: string; texto: string }
         <EmptyState.Description className="mt-3 max-w-2xl text-base leading-relaxed text-[#5E6570]">
           {texto}
         </EmptyState.Description>
+        {children ? <div className="mt-5">{children}</div> : null}
       </EmptyState.Content>
     </EmptyState.Root>
   );

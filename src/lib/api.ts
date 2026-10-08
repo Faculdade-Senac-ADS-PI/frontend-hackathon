@@ -12,7 +12,9 @@ export class ErroApi extends Error {
 export async function api<T>(caminho: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set("Accept", "application/json");
-  if (init.body) headers.set("Content-Type", "application/json");
+  if (init.body && !(init.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
 
   const token = lerToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);

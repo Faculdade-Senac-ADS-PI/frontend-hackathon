@@ -1,176 +1,182 @@
-export type StatusEtapa = "concluido" | "em_andamento" | "pendente" | "atencao";
+import { api } from "@/lib/api";
 
-export type HistoricoEvento = {
-  data: string;
-  autor: string;
-  descricao: string;
-  tipo: "envio" | "triagem" | "analise" | "parecer" | "diligencia";
-};
+export type StatusProjeto =
+  | "ProcessandoIa"
+  | "AguardandoAnalista"
+  | "Aprovado"
+  | "Reprovado"
+  | "Reanalise";
 
-export type PropostaProponente = {
+/** Visão limpa do proponente: status, resultado e histórico de versões. Não exibe nota interna da IA. */
+export type ProjetoProponenteResposta = {
   id: string;
   protocolo: string;
   titulo: string;
-  area: string;
-  anoBase: string;
-  dispendioTotal: number;
-  dispendioEquipe: number;
-  dispendioMateriais: number;
-  dispendioTerceiros: number;
-  beneficioEstimado: number;
-  incertezaTecnica: string;
-  metodologia: string;
-  status: "triagem" | "em_analise" | "elegivel" | "diligencia" | "inelegivel";
-  dataEnvio: string;
-  parecerAnalista?: string;
-  etapas: {
-    submissao: StatusEtapa;
-    triagem: StatusEtapa;
-    analiseFrascati: StatusEtapa;
-    parecerFinal: StatusEtapa;
-  };
-  historico: HistoricoEvento[];
+  setor: string;
+  nomeArquivo: string;
+  versaoEnvio: number;
+  status: StatusProjeto;
+  justificativaAnalista?: string | null;
+  criadoEm: string;
+  atualizadoEm: string;
+  decididoEm?: string | null;
 };
 
-export const PROPOSTAS_PADRAO: PropostaProponente[] = [
-  {
-    id: "prop-01",
-    protocolo: "PROP-2026-0101",
-    titulo: "Algoritmo Heurístico de Otimização Termodinâmica para Cargas Perecíveis",
-    area: "Software & IA",
-    anoBase: "2026",
-    dispendioTotal: 850000,
-    dispendioEquipe: 600000,
-    dispendioMateriais: 100000,
-    dispendioTerceiros: 150000,
-    beneficioEstimado: 289000,
-    incertezaTecnica:
-      "Incerteza sobre a viabilidade de convergência matemática em tempo hábil para rotas com múltiplas variações térmicas locais sem suporte de modelos pré-existentes na literatura.",
-    metodologia:
-      "Delineamento experimental comparativo com formulações proprietárias e simulações em câmara de vácuo virtual.",
-    status: "em_analise",
-    dataEnvio: "06/10/2026",
-    parecerAnalista:
-      "Incerteza técnica comprovada. Em fase de verificação de não-rotina nos testes laboratoriais.",
-    etapas: {
-      submissao: "concluido",
-      triagem: "concluido",
-      analiseFrascati: "em_andamento",
-      parecerFinal: "pendente",
-    },
-    historico: [
-      {
-        data: "06/10/2026 14:32",
-        autor: "Proponente (Marina Costa)",
-        descricao: "Proposta submetida com sucesso para a esteira técnica.",
-        tipo: "envio",
-      },
-      {
-        data: "06/10/2026 16:10",
-        autor: "Sistema",
-        descricao: "Protocolo PROP-2026-0101 gerado e direcionado para triagem.",
-        tipo: "triagem",
-      },
-      {
-        data: "07/10/2026 09:15",
-        autor: "Analista de P&D (Rafael Duarte)",
-        descricao: "Iniciada análise dos critérios de Frascati e enquadramento no Art. 17 da Lei 11.196/05.",
-        tipo: "analise",
-      },
-    ],
-  },
-  {
-    id: "prop-02",
-    protocolo: "PROP-2026-0089",
-    titulo: "Sensor IOT de Baixo Consumo para Telemetria em Solo Compactado",
-    area: "Engenharia & Automação",
-    anoBase: "2026",
-    dispendioTotal: 680000,
-    dispendioEquipe: 450000,
-    dispendioMateriais: 180000,
-    dispendioTerceiros: 50000,
-    beneficioEstimado: 231200,
-    incertezaTecnica:
-      "Superação de atenuação severa de radiofrequência em faixas sub-GHz com consumo restrito a captação piezoelétrica.",
-    metodologia:
-      "Desenvolvimento de antena integrada e ensaios de propagação com banco de ensaios padronizado.",
-    status: "elegivel",
-    dataEnvio: "22/09/2026",
-    parecerAnalista:
-      "Projeto 100% elegível nos termos do Manual de Frascati. Atende aos critérios de novidade, incerteza e sistematicidade. Rastro documental regular.",
-    etapas: {
-      submissao: "concluido",
-      triagem: "concluido",
-      analiseFrascati: "concluido",
-      parecerFinal: "concluido",
-    },
-    historico: [
-      {
-        data: "22/09/2026 10:00",
-        autor: "Proponente",
-        descricao: "Proposta submetida com projeto executivo anexado.",
-        tipo: "envio",
-      },
-      {
-        data: "24/09/2026 15:40",
-        autor: "Analista de P&D",
-        descricao: "Enquadramento favorável emitido com nota técnica.",
-        tipo: "parecer",
-      },
-    ],
-  },
-];
+/** Cada um dos 5 critérios Frascati avaliados pela IA (0 a 20 pontos). */
+export type CriterioAvaliadoResposta = {
+  chave: string;
+  nome: string;
+  descricao: string;
+  nota?: number | null;
+  notaMaxima: number;
+  justificativa?: string | null;
+};
 
-const CHAVE_STORAGE = "hackthon_propostas_proponente";
+/** Visão completa do analista: notas da IA, resumo, justificativas por critério e arquivo PDF. */
+export type ProjetoAnaliseResposta = {
+  id: string;
+  protocolo: string;
+  titulo: string;
+  setor: string;
+  status: StatusProjeto;
+  versaoEnvio: number;
+  proponenteId: string;
+  proponenteNome: string;
+  proponenteEmail: string;
+  nomeArquivo: string;
+  tamanhoBytes: number;
+  notaIa?: number | null;
+  recomendacaoIa?: string | null;
+  resumoIa?: string | null;
+  parecerIa?: string | null;
+  origemAnaliseIa?: string | null;
+  analisadoEm?: string | null;
+  criterios: CriterioAvaliadoResposta[];
+  justificativaAnalista?: string | null;
+  analistaNome?: string | null;
+  decididoEm?: string | null;
+  criadoEm: string;
+  atualizadoEm: string;
+};
 
-export function obterPropostas(): PropostaProponente[] {
-  if (typeof window === "undefined") return PROPOSTAS_PADRAO;
-  try {
-    const salvo = localStorage.getItem(CHAVE_STORAGE);
-    if (!salvo) {
-      localStorage.setItem(CHAVE_STORAGE, JSON.stringify(PROPOSTAS_PADRAO));
-      return PROPOSTAS_PADRAO;
-    }
-    return JSON.parse(salvo) as PropostaProponente[];
-  } catch {
-    return PROPOSTAS_PADRAO;
+export const SETORES_PADRAO = [
+  "Engenharia de Operações",
+  "Tecnologia da Informação & Software",
+  "Pesquisa e Desenvolvimento (P&D)",
+  "Logística & Cadeia de Suprimentos",
+  "Produção & Manufatura",
+  "Qualidade & Processos",
+  "Marketing & Comercial",
+  "Recursos Humanos",
+  "Finanças & Controladoria",
+  "Sustentabilidade & ESG",
+] as const;
+
+export function rotuloStatus(status: StatusProjeto): string {
+  switch (status) {
+    case "ProcessandoIa":
+      return "Processando Análise de IA";
+    case "AguardandoAnalista":
+      return "Aguardando Analista";
+    case "Aprovado":
+      return "Aprovado";
+    case "Reprovado":
+      return "Reprovado";
+    case "Reanalise":
+      return "Reanálise Solicitada";
+    default:
+      return status;
   }
 }
 
-export function salvarNovaProposta(nova: Omit<PropostaProponente, "id" | "protocolo" | "dataEnvio" | "status" | "etapas" | "historico">): PropostaProponente {
-  const lista = obterPropostas();
-  const protocolo = `PROP-2026-${String(Math.floor(1000 + Math.random() * 9000))}`;
-  const dataHoje = new Date().toLocaleDateString("pt-BR");
-
-  const propostaCriada: PropostaProponente = {
-    ...nova,
-    id: `prop-${Date.now()}`,
-    protocolo,
-    status: "triagem",
-    dataEnvio: dataHoje,
-    etapas: {
-      submissao: "concluido",
-      triagem: "em_andamento",
-      analiseFrascati: "pendente",
-      parecerFinal: "pendente",
-    },
-    historico: [
-      {
-        data: `${dataHoje} às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`,
-        autor: "Proponente",
-        descricao: `Projeto submetido com protocolo ${protocolo} gerado.`,
-        tipo: "envio",
-      },
-    ],
-  };
-
-  const atualizada = [propostaCriada, ...lista];
-  if (typeof window !== "undefined") {
-    try {
-      localStorage.setItem(CHAVE_STORAGE, JSON.stringify(atualizada));
-    } catch {
-      // Ignora erro de storage
-    }
+export function corBadgeStatus(status: StatusProjeto): {
+  bg: string;
+  text: string;
+  border: string;
+} {
+  switch (status) {
+    case "ProcessandoIa":
+      return { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" };
+    case "AguardandoAnalista":
+      return { bg: "bg-amber-50", text: "text-amber-800", border: "border-amber-200" };
+    case "Aprovado":
+      return { bg: "bg-emerald-50", text: "text-emerald-800", border: "border-emerald-200" };
+    case "Reprovado":
+      return { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" };
+    case "Reanalise":
+      return { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200" };
+    default:
+      return { bg: "bg-gray-50", text: "text-gray-700", border: "border-gray-200" };
   }
-  return propostaCriada;
+}
+
+// -------------------------------------------------------------
+// Chamadas de API ao Backend
+// -------------------------------------------------------------
+
+/** Envia nova proposta em PDF com Título e Setor. */
+export async function enviarPropostaPdf(
+  titulo: string,
+  setor: string,
+  arquivo: File
+): Promise<ProjetoProponenteResposta> {
+  const form = new FormData();
+  form.append("Titulo", titulo);
+  form.append("Setor", setor);
+  form.append("Arquivo", arquivo);
+
+  return await api<ProjetoProponenteResposta>("/api/projetos/upload", {
+    method: "POST",
+    body: form,
+  });
+}
+
+/** Reenvia nova versão de PDF quando a proposta está em Reanálise. */
+export async function reenviarPropostaPdf(
+  projetoId: string,
+  arquivo: File
+): Promise<ProjetoProponenteResposta> {
+  const form = new FormData();
+  form.append("Arquivo", arquivo);
+
+  return await api<ProjetoProponenteResposta>(`/api/projetos/${projetoId}/reenviar`, {
+    method: "POST",
+    body: form,
+  });
+}
+
+/** Lista as propostas submetidas pelo proponente logado. */
+export async function obterMinhasPropostas(): Promise<ProjetoProponenteResposta[]> {
+  return await api<ProjetoProponenteResposta[]>("/api/projetos/meus");
+}
+
+/** Fila técnica do analista. */
+export async function obterFilaAnalise(status?: string): Promise<ProjetoAnaliseResposta[]> {
+  const query = status && status !== "todas" ? `?status=${encodeURIComponent(status)}` : "";
+  return await api<ProjetoAnaliseResposta[]>(`/api/projetos/fila${query}`);
+}
+
+/** Consulta de dossiê específico. */
+export async function obterProjetoPorId<T = ProjetoAnaliseResposta | ProjetoProponenteResposta>(
+  id: string
+): Promise<T> {
+  return await api<T>(`/api/projetos/${id}`);
+}
+
+/** Delibera decisão do analista (Aprovado, Reprovado ou Reanalise). */
+export async function deliberarProjeto(
+  projetoId: string,
+  decisao: "Aprovado" | "Reprovado" | "Reanalise",
+  justificativa?: string
+): Promise<ProjetoAnaliseResposta> {
+  return await api<ProjetoAnaliseResposta>(`/api/projetos/${projetoId}/deliberar`, {
+    method: "POST",
+    body: JSON.stringify({ decisao, justificativa }),
+  });
+}
+
+export function formatarBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
