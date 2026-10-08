@@ -52,10 +52,10 @@ export default function ConfiguracoesPage() {
           <form onSubmit={salvar} className="flex flex-col gap-6">
             {/* Bloco 1: Dados Institucionais da Empresa */}
             <section className="neo p-6 sm:p-8 space-y-5">
-              <div className="border-b border-[#D9DCE3] pb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#8E1218]">Identificação</span>
-                <h2 className="font-display text-2xl text-[#2C3138] mt-1">Dados Cadastrais da Empresa</h2>
-                <p className="text-xs text-[#5E6570]">
+              <div className="border-b border-[#ebebeb] pb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#8a1533]">Identificação</span>
+                <h2 className="font-display text-2xl text-[#333333] mt-1">Dados Cadastrais da Empresa</h2>
+                <p className="text-xs text-[#727c81]">
                   Informações jurídicas da pessoa jurídica proponente perante a Receita Federal do Brasil.
                 </p>
               </div>
@@ -91,7 +91,7 @@ export default function ConfiguracoesPage() {
                   onChange={setCidade}
                 />
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#5E6570]">UF</label>
+                  <label className="text-xs font-semibold text-[#727c81]">UF</label>
                   <NativeSelect.Root size="sm" width="full">
                     <NativeSelect.Field value={uf} onChange={(e) => setUf(e.target.value)}>
                       <option value="CE">Ceará (CE)</option>
@@ -119,19 +119,19 @@ export default function ConfiguracoesPage() {
 
             {/* Bloco 2: Perfil Fiscal da Lei do Bem */}
             <section className="neo p-6 sm:p-8 space-y-5">
-              <div className="border-b border-[#D9DCE3] pb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#8E1218]">Tributário</span>
-                <h2 className="font-display text-2xl text-[#2C3138] mt-1">Enquadramento Fiscal (Lei 11.196/05)</h2>
-                <p className="text-xs text-[#5E6570]">
+              <div className="border-b border-[#ebebeb] pb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#8a1533]">Tributário</span>
+                <h2 className="font-display text-2xl text-[#333333] mt-1">Enquadramento Fiscal (Lei 11.196/05)</h2>
+                <p className="text-xs text-[#727c81]">
                   Requisitos legais exigidos pela Receita Federal e MCTI para fruição dos incentivos à inovação.
                 </p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="neo-inset p-4 space-y-1">
-                  <span className="text-xs font-bold text-[#8E1218] uppercase">Regime Tributário</span>
-                  <p className="font-display text-lg font-bold text-[#2C3138]">{regime}</p>
-                  <p className="text-[11px] text-[#5E6570]">
+                  <span className="text-xs font-bold text-[#8a1533] uppercase">Regime Tributário</span>
+                  <p className="font-display text-lg font-bold text-[#333333]">{regime}</p>
+                  <p className="text-[11px] text-[#727c81]">
                     Exigência legal: Somente empresas tributadas pelo Lucro Real podem usufruir da dedução de P&D.
                   </p>
                 </div>
@@ -139,7 +139,7 @@ export default function ConfiguracoesPage() {
                 <div className="neo-inset p-4 space-y-1">
                   <span className="text-xs font-bold text-emerald-800 uppercase">Certidão Negativa (CND)</span>
                   <p className="font-display text-lg font-bold text-emerald-700">{cndStatus}</p>
-                  <p className="text-[11px] text-[#5E6570]">
+                  <p className="text-[11px] text-[#727c81]">
                     Regularidade fiscal federal ativa junto à Receita Federal e Procuradoria-Geral da Fazenda Nacional.
                   </p>
                 </div>
@@ -179,51 +179,51 @@ export default function ConfiguracoesPage() {
 
             {/* Bloco 3: Notificações e Comunicação */}
             <section className="neo p-6 sm:p-8 space-y-4">
-              <div className="border-b border-[#D9DCE3] pb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#8E1218]">Comunicação</span>
-                <h2 className="font-display text-2xl text-[#2C3138] mt-1">Notificações da Esteira</h2>
-                <p className="text-xs text-[#5E6570]">
+              <div className="border-b border-[#ebebeb] pb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#8a1533]">Comunicação</span>
+                <h2 className="font-display text-2xl text-[#333333] mt-1">Notificações da Esteira</h2>
+                <p className="text-xs text-[#727c81]">
                   Configure os alertas por e-mail para acompanhar a deliberação dos analistas técnicos.
                 </p>
               </div>
 
               <div className="space-y-3">
-                <label className="neo-inset flex items-center justify-between p-3.5 text-xs text-[#2C3138] cursor-pointer">
+                <label className="neo-inset flex items-center justify-between p-3.5 text-xs text-[#333333] cursor-pointer">
                   <div>
                     <span className="font-bold block">Início da Análise Técnica</span>
-                    <span className="text-[#5E6570]">Receber aviso quando o analista assumir o projeto na fila.</span>
+                    <span className="text-[#727c81]">Receber aviso quando o analista assumir o projeto na fila.</span>
                   </div>
                   <input
                     type="checkbox"
                     checked={notifAnalise}
                     onChange={(e) => setNotifAnalise(e.target.checked)}
-                    className="accent-[#C4161C] w-4 h-4 cursor-pointer"
+                    className="accent-[#a6193c] w-4 h-4 cursor-pointer"
                   />
                 </label>
 
-                <label className="neo-inset flex items-center justify-between p-3.5 text-xs text-[#2C3138] cursor-pointer">
+                <label className="neo-inset flex items-center justify-between p-3.5 text-xs text-[#333333] cursor-pointer">
                   <div>
                     <span className="font-bold block">Emissão do Parecer Preliminar</span>
-                    <span className="text-[#5E6570]">Receber comunicado imediato quando a decisão for registrada.</span>
+                    <span className="text-[#727c81]">Receber comunicado imediato quando a decisão for registrada.</span>
                   </div>
                   <input
                     type="checkbox"
                     checked={notifParecer}
                     onChange={(e) => setNotifParecer(e.target.checked)}
-                    className="accent-[#C4161C] w-4 h-4 cursor-pointer"
+                    className="accent-[#a6193c] w-4 h-4 cursor-pointer"
                   />
                 </label>
 
-                <label className="neo-inset flex items-center justify-between p-3.5 text-xs text-[#2C3138] cursor-pointer">
+                <label className="neo-inset flex items-center justify-between p-3.5 text-xs text-[#333333] cursor-pointer">
                   <div>
                     <span className="font-bold block">Abertura de Diligências / Dúvidas</span>
-                    <span className="text-[#5E6570]">Alerta prioritário caso o analista solicite documentos adicionais.</span>
+                    <span className="text-[#727c81]">Alerta prioritário caso o analista solicite documentos adicionais.</span>
                   </div>
                   <input
                     type="checkbox"
                     checked={notifDiligencia}
                     onChange={(e) => setNotifDiligencia(e.target.checked)}
-                    className="accent-[#C4161C] w-4 h-4 cursor-pointer"
+                    className="accent-[#a6193c] w-4 h-4 cursor-pointer"
                   />
                 </label>
               </div>

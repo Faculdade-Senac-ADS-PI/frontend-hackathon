@@ -145,48 +145,48 @@ function Painel({ perfilId }: { perfilId: string }) {
       {/* KPI Operacional Cards CRM */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5" aria-label="KPIs Operacionais do ADM">
         <div className="neo flex flex-col justify-between p-4 sm:p-5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Total de Contas</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#727c81]">Total de Contas</span>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="font-display text-3xl font-bold text-[#2C3138]">{metricas.total}</span>
+            <span className="font-display text-3xl font-bold text-[#333333]">{metricas.total}</span>
             <span className="text-xs font-medium text-slate-700 bg-slate-200 px-2 py-0.5 rounded-full">Base Geral</span>
           </div>
-          <p className="mt-2 text-xs text-[#5E6570]">Usuários na plataforma</p>
+          <p className="mt-2 text-xs text-[#727c81]">Usuários na plataforma</p>
         </div>
 
         <div className="neo flex flex-col justify-between p-4 sm:p-5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Proponentes Ativos</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#727c81]">Proponentes Ativos</span>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="font-display text-3xl font-bold text-blue-700">{metricas.proponentes}</span>
             <span className="text-xs font-medium text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">Empresas</span>
           </div>
-          <p className="mt-2 text-xs text-[#5E6570]">Demandantes Lei do Bem</p>
+          <p className="mt-2 text-xs text-[#727c81]">Demandantes Lei do Bem</p>
         </div>
 
         <div className="neo flex flex-col justify-between p-4 sm:p-5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Analistas Técnicos</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#727c81]">Analistas Técnicos</span>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="font-display text-3xl font-bold text-[#8E1218]">{metricas.analistas}</span>
+            <span className="font-display text-3xl font-bold text-[#8a1533]">{metricas.analistas}</span>
             <span className="text-xs font-medium text-red-800 bg-red-100 px-2 py-0.5 rounded-full">Equipe P&D</span>
           </div>
-          <p className="mt-2 text-xs text-[#5E6570]">Capacidade de esteira</p>
+          <p className="mt-2 text-xs text-[#727c81]">Capacidade de esteira</p>
         </div>
 
         <div className="neo flex flex-col justify-between p-4 sm:p-5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Administradores</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#727c81]">Administradores</span>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="font-display text-3xl font-bold text-[#2C3138]">{metricas.adms}</span>
+            <span className="font-display text-3xl font-bold text-[#333333]">{metricas.adms}</span>
             <span className="text-xs font-medium text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full">Governança</span>
           </div>
-          <p className="mt-2 text-xs text-[#5E6570]">Gestão do sistema</p>
+          <p className="mt-2 text-xs text-[#727c81]">Gestão do sistema</p>
         </div>
 
         <div className="neo flex flex-col justify-between p-4 sm:p-5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#5E6570]">Desativados</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#727c81]">Desativados</span>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="font-display text-3xl font-bold text-gray-600">{metricas.desativados}</span>
             <span className="text-xs font-medium text-gray-700 bg-gray-200 px-2 py-0.5 rounded-full">Bloqueados</span>
           </div>
-          <p className="mt-2 text-xs text-[#5E6570]">Sem permissão de login</p>
+          <p className="mt-2 text-xs text-[#727c81]">Sem permissão de login</p>
         </div>
       </div>
 
@@ -201,7 +201,7 @@ function Painel({ perfilId }: { perfilId: string }) {
               placeholder="Pesquisar por nome ou e-mail..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className="neo-inset w-full px-4 py-2.5 text-sm placeholder:text-[#8E95A2]"
+              className="neo-inset w-full px-4 py-2.5 text-sm placeholder:text-[#828f95]"
             />
           </div>
 
@@ -272,16 +272,16 @@ function Painel({ perfilId }: { perfilId: string }) {
                   <Table.Row key={usuario.id}>
                     <Table.Cell>
                       <div className="flex items-center gap-3">
-                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#E7E9EE] text-xs font-bold text-[#8E1218] shadow-[2px_2px_5px_#c8cad1,-2px_-2px_5px_#ffffff]">
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#f7f8f9] text-xs font-bold text-[#8a1533] shadow-[2px_2px_5px_#e3e5e9,-2px_-2px_5px_#ffffff]">
                           {obterIniciais(usuario.nome)}
                         </span>
                         <div>
-                          <p className="font-semibold text-sm text-[#2C3138]">{usuario.nome}</p>
-                          <p className="text-xs text-[#5E6570]">ID: {usuario.id.slice(0, 8)}...</p>
+                          <p className="font-semibold text-sm text-[#333333]">{usuario.nome}</p>
+                          <p className="text-xs text-[#727c81]">ID: {usuario.id.slice(0, 8)}...</p>
                         </div>
                       </div>
                     </Table.Cell>
-                    <Table.Cell className="text-sm text-[#5E6570]">{usuario.email}</Table.Cell>
+                    <Table.Cell className="text-sm text-[#727c81]">{usuario.email}</Table.Cell>
                     <Table.Cell>
                       <SeletorPapel
                         nome={usuario.nome}
@@ -317,12 +317,12 @@ function Painel({ perfilId }: { perfilId: string }) {
               <article key={usuario.id} className="neo flex flex-col gap-3 p-5">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#E7E9EE] text-sm font-bold text-[#8E1218] shadow-[2px_2px_5px_#c8cad1,-2px_-2px_5px_#ffffff]">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f7f8f9] text-sm font-bold text-[#8a1533] shadow-[2px_2px_5px_#e3e5e9,-2px_-2px_5px_#ffffff]">
                       {obterIniciais(usuario.nome)}
                     </span>
                     <div>
-                      <p className="font-semibold text-[#2C3138]">{usuario.nome}</p>
-                      <p className="text-xs break-words text-[#5E6570]">{usuario.email}</p>
+                      <p className="font-semibold text-[#333333]">{usuario.nome}</p>
+                      <p className="text-xs break-words text-[#727c81]">{usuario.email}</p>
                     </div>
                   </div>
                   <Badge colorPalette={usuario.ativo ? "green" : "gray"} variant="subtle">
@@ -331,7 +331,7 @@ function Painel({ perfilId }: { perfilId: string }) {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-[#5E6570]">Papel no Sistema</label>
+                  <label className="text-xs font-medium text-[#727c81]">Papel no Sistema</label>
                   <SeletorPapel
                     nome={usuario.nome}
                     valor={rascunhos[usuario.id] ?? usuario.papel}
@@ -339,7 +339,7 @@ function Painel({ perfilId }: { perfilId: string }) {
                   />
                 </div>
 
-                <div className="border-t border-[#D9DCE3] pt-3">
+                <div className="border-t border-[#ebebeb] pt-3">
                   <Acoes
                     usuario={usuario}
                     perfilId={perfilId}
@@ -360,12 +360,12 @@ function Painel({ perfilId }: { perfilId: string }) {
       <Dialog.Root open={confirmacao !== null} onOpenChange={(detalhe) => !detalhe.open && setConfirmacao(null)}>
         <Dialog.Backdrop />
         <Dialog.Positioner p="4">
-          <Dialog.Content className="neo" bg="#F3F4F7" w="full" maxW="lg">
+          <Dialog.Content className="neo" bg="#f7f8f9" w="full" maxW="lg">
             <Dialog.Header>
-              <Dialog.Title className="font-display text-2xl text-[#2C3138]">Desativar Conta no CRM</Dialog.Title>
+              <Dialog.Title className="font-display text-2xl text-[#333333]">Desativar Conta no CRM</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              <Dialog.Description className="text-sm leading-relaxed text-[#5E6570]">
+              <Dialog.Description className="text-sm leading-relaxed text-[#727c81]">
                 {confirmacao?.nome} perderá imediatamente a capacidade de entrar na plataforma.
                 O histórico completo de auditoria e registro de alterações será preservado no banco de dados.
               </Dialog.Description>

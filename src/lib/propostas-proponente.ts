@@ -3,9 +3,53 @@ import { api } from "@/lib/api";
 export type StatusProjeto =
   | "ProcessandoIa"
   | "AguardandoAnalista"
-  | "Aprovado"
-  | "Reprovado"
+  | "Elegivel"
+  | "ComRessalvas"
+  | "NaoElegivel"
+  | "EvidenciaInsuficiente"
   | "Reanalise";
+
+/** As quatro classes oficiais do desafio, na ordem do Guia do Participante. */
+export const CLASSES_ELEGIBILIDADE = [
+  "Elegivel",
+  "ComRessalvas",
+  "NaoElegivel",
+  "EvidenciaInsuficiente",
+] as const;
+
+export type ClasseElegibilidade = (typeof CLASSES_ELEGIBILIDADE)[number];
+
+/** Estado de fluxo: o analista pediu complementação (não é classificação). */
+export const ehFluxo = (status: StatusProjeto) =>
+  status === "ProcessandoIa" || status === "AguardandoAnalista" || status === "Reanalise";
+
+export const ehClassificacaoFinal = (status: StatusProjeto): status is ClasseElegibilidade =>
+  (CLASSES_ELEGIBILIDADE as readonly string[]).includes(status);
+
+/** Payload completo da deliberação: classe + fundamentação + rastreabilidade. */
+export type DeliberacaoPayload = {
+  decisao: StatusProjeto;
+  justificativa?: string;
+  recorteSustentado?: string;
+  limitacaoTecnica?: string;
+  evidenciaNecessaria?: string;
+  eloAusente?: string;
+  evidenciasAdicionais?: string;
+  evidenciasUtilizadas?: string;
+  evidenciasContrarias?: string;
+  lacunas?: string;
+  regraAplicada?: string;
+};
+
+/** Parecer rastreável gerado pelo backend (Markdown pronto para exibir/imprimir). */
+export type ParecerResposta = {
+  projetoId: string;
+  protocolo: string;
+  titulo: string;
+  classificacao: string;
+  markdown: string;
+  geradoEm: string;
+};
 
 export type ArquivoItemResposta = {
   id: string;
@@ -65,6 +109,15 @@ export type ProjetoAnaliseResposta = {
   justificativaAnalista?: string | null;
   analistaNome?: string | null;
   decididoEm?: string | null;
+  recorteSustentado?: string | null;
+  limitacaoTecnica?: string | null;
+  evidenciaNecessaria?: string | null;
+  eloAusente?: string | null;
+  evidenciasAdicionais?: string | null;
+  evidenciasUtilizadas?: string | null;
+  evidenciasContrarias?: string | null;
+  lacunas?: string | null;
+  regraAplicada?: string | null;
   criadoEm: string;
   atualizadoEm: string;
 };
@@ -88,10 +141,14 @@ export function rotuloStatus(status: StatusProjeto): string {
       return "Processando Análise de IA";
     case "AguardandoAnalista":
       return "Aguardando Analista";
-    case "Aprovado":
-      return "Aprovado";
-    case "Reprovado":
-      return "Reprovado";
+    case "Elegivel":
+      return "Elegível";
+    case "ComRessalvas":
+      return "Com ressalvas";
+    case "NaoElegivel":
+      return "Não elegível";
+    case "EvidenciaInsuficiente":
+      return "Evidência insuficiente";
     case "Reanalise":
       return "Reanálise Solicitada";
     default:
@@ -109,10 +166,14 @@ export function corBadgeStatus(status: StatusProjeto): {
       return { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" };
     case "AguardandoAnalista":
       return { bg: "bg-amber-50", text: "text-amber-800", border: "border-amber-200" };
-    case "Aprovado":
+    case "Elegivel":
       return { bg: "bg-emerald-50", text: "text-emerald-800", border: "border-emerald-200" };
-    case "Reprovado":
+    case "ComRessalvas":
+      return { bg: "bg-orange-50", text: "text-orange-800", border: "border-orange-200" };
+    case "NaoElegivel":
       return { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" };
+    case "EvidenciaInsuficiente":
+      return { bg: "bg-slate-100", text: "text-slate-700", border: "border-slate-300" };
     case "Reanalise":
       return { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200" };
     default:
@@ -194,16 +255,20 @@ export async function obterProjetoPorId<T = ProjetoAnaliseResposta | ProjetoProp
   return await api<T>(`/api/projetos/${id}`);
 }
 
-/** Delibera decisão do analista (Aprovado, Reprovado ou Reanalise). */
+/** Delibera a classificação do analista (4 classes do desafio ou Reanalise), com rastreabilidade. */
 export async function deliberarProjeto(
   projetoId: string,
-  decisao: "Aprovado" | "Reprovado" | "Reanalise",
-  justificativa?: string
+  payload: DeliberacaoPayload
 ): Promise<ProjetoAnaliseResposta> {
   return await api<ProjetoAnaliseResposta>(`/api/projetos/${projetoId}/deliberar`, {
     method: "POST",
-    body: JSON.stringify({ decisao, justificativa }),
+    body: JSON.stringify(payload),
   });
+}
+
+/** Gera o parecer rastreável (Markdown) da classificação registrada. */
+export async function gerarParecer(projetoId: string): Promise<ParecerResposta> {
+  return await api<ParecerResposta>(`/api/projetos/${projetoId}/parecer`);
 }
 
 export function formatarBytes(bytes: number): string {

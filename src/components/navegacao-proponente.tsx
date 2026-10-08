@@ -48,8 +48,8 @@ export function NavegacaoProponente() {
                 href={aba.href}
                 className={`flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2.5 text-center transition-all ${
                   ativo
-                    ? "neo-inset font-bold text-[#8E1218] shadow-[inset_3px_3px_6px_#c8cad1,inset_-3px_-3px_6px_#ffffff]"
-                    : "text-[#5E6570] hover:text-[#2C3138] hover:bg-[#EBEDF2]"
+                    ? "neo-inset font-bold text-[#8a1533] shadow-[inset_3px_3px_6px_#e3e5e9,inset_-3px_-3px_6px_#ffffff]"
+                    : "text-[#727c81] hover:text-[#333333] hover:bg-[#ebebeb]"
                 }`}
               >
                 <div className="flex items-center gap-1.5">
@@ -58,7 +58,7 @@ export function NavegacaoProponente() {
                   </span>
                   <span className="text-sm font-semibold">{aba.nome}</span>
                 </div>
-                <span className="hidden text-[11px] font-normal text-[#8E95A2] lg:inline">
+                <span className="hidden text-[11px] font-normal text-[#828f95] lg:inline">
                   {aba.descricao}
                 </span>
               </Link>

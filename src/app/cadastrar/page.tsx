@@ -65,9 +65,9 @@ export default function Cadastrar() {
           Criar conta
         </BotaoPrimario>
       </form>
-      <p className="text-sm text-[#5E6570]">
+      <p className="text-sm text-[#727c81]">
         Já tem conta?{" "}
-        <Link href="/entrar" className="font-semibold text-[#8E1218]">
+        <Link href="/entrar" className="font-semibold text-[#8a1533]">
           Entrar
         </Link>
         .

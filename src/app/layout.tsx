@@ -1,22 +1,17 @@
 import type { Metadata } from "next";
-import { Fraunces, Manrope } from "next/font/google";
+import { Heebo } from "next/font/google";
 import { Provedor } from "@/components/provedor";
 import "./globals.css";
 
-const fraunces = Fraunces({
+const heebo = Heebo({
   subsets: ["latin"],
-  variable: "--font-fraunces",
-  display: "swap",
-});
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope",
+  weight: "variable",
+  variable: "--font-heebo",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Hackthon — Elegibilidade da Lei do Bem",
+  title: "Banco do Nordeste — Lei do Bem | Portal de Projetos de Inovação",
   description:
     "Acesso da equipe de P&D e dos proponentes para a análise preliminar de enquadramento na Lei do Bem.",
 };
@@ -24,7 +19,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${fraunces.variable} ${manrope.variable} antialiased`}>
+      <body className={`${heebo.variable} antialiased`}>
         <Provedor>{children}</Provedor>
       </body>
     </html>
