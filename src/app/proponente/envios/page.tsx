@@ -11,7 +11,7 @@ import { Aviso } from "@/components/estados";
 import { NavegacaoProponente } from "@/components/navegacao-proponente";
 import {
   corBadgeStatus,
-  enviarPropostaPdf,
+  enviarPropostaArquivos,
   formatarBytes,
   obterMinhasPropostas,
   rotuloStatus,
@@ -28,7 +28,7 @@ export default function EnviosPage() {
   const [titulo, setTitulo] = useState("");
   const [setor, setSetor] = useState<string>(SETORES_PADRAO[0]);
   const [outroSetor, setOutroSetor] = useState("");
-  const [arquivo, setArquivo] = useState<File | null>(null);
+  const [arquivos, setArquivos] = useState<File[]>([]);
 
   // Estados de envio
   const [enviando, setEnviando] = useState(false);
@@ -51,27 +51,39 @@ export default function EnviosPage() {
     }
   }
 
-  function aoSelecionarArquivo(e: React.ChangeEvent<HTMLInputElement>) {
+  function aoSelecionarArquivos(e: React.ChangeEvent<HTMLInputElement>) {
     setErro("");
-    const file = e.target.files?.[0];
-    if (!file) {
-      setArquivo(null);
-      return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const novosArquivos: File[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const nomeMin = file.name.toLowerCase();
+      if (!nomeMin.endsWith(".pdf") && !nomeMin.endsWith(".csv")) {
+        setErro(`O arquivo "${file.name}" não é suportado. Apenas extensões .pdf e .csv são permitidas.`);
+        return;
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        setErro(`O arquivo "${file.name}" ultrapassa o limite individual de 15 MB.`);
+        return;
+      }
+      novosArquivos.push(file);
     }
 
-    if (!file.name.toLowerCase().endsWith(".pdf")) {
-      setErro("O arquivo deve ser obrigatoriamente um documento PDF.");
-      setArquivo(null);
-      return;
-    }
+    setArquivos((atuais) => {
+      // Evita duplicatas pelo nome
+      const nomesExistentes = new Set(atuais.map((a) => a.name));
+      const filtrados = novosArquivos.filter((a) => !nomesExistentes.has(a.name));
+      return [...atuais, ...filtrados];
+    });
 
-    if (file.size > 10 * 1024 * 1024) {
-      setErro("O tamanho do arquivo não pode ultrapassar 10 MB.");
-      setArquivo(null);
-      return;
-    }
+    // Limpa o input para permitir selecionar novos arquivos
+    e.target.value = "";
+  }
 
-    setArquivo(file);
+  function removerArquivo(index: number) {
+    setArquivos((atuais) => atuais.filter((_, i) => i !== index));
   }
 
   async function submeter(e: React.FormEvent) {
@@ -91,17 +103,23 @@ export default function EnviosPage() {
       return;
     }
 
-    if (!arquivo) {
-      setErro("Selecione o arquivo PDF contendo a proposta técnica.");
+    if (arquivos.length === 0) {
+      setErro("Selecione pelo menos um arquivo PDF ou CSV com a proposta técnica.");
+      return;
+    }
+
+    const tamanhoTotal = arquivos.reduce((acc, a) => acc + a.size, 0);
+    if (tamanhoTotal > 30 * 1024 * 1024) {
+      setErro("O tamanho somado de todos os arquivos não pode ultrapassar 30 MB.");
       return;
     }
 
     setEnviando(true);
     try {
-      const criada = await enviarPropostaPdf(titulo.trim(), setorFinal, arquivo);
+      const criada = await enviarPropostaArquivos(titulo.trim(), setorFinal, arquivos);
       setSucesso(criada);
       setTitulo("");
-      setArquivo(null);
+      setArquivos([]);
       setOutroSetor("");
       // Recarrega lista
       void carregarPropostas();
@@ -117,7 +135,7 @@ export default function EnviosPage() {
   return (
     <Casca
       titulo="Envio de Proposta de Inovação"
-      descricao="Submeta o documento PDF da proposta do seu setor. O sistema processará o arquivo e direcionará para análise preliminar de elegibilidade à Lei do Bem."
+      descricao="Submeta arquivos em PDF e/ou CSV da proposta do seu setor. O sistema processará todos os anexos e direcionará para análise de elegibilidade à Lei do Bem pelo Agente de IA."
       larguraMaxima="max-w-7xl"
     >
       {() => (
@@ -135,7 +153,7 @@ export default function EnviosPage() {
                     Proposta enviada com sucesso! Protocolo: {sucesso.protocolo}
                   </h3>
                   <p className="text-xs text-emerald-800">
-                    O documento &quot;{sucesso.nomeArquivo}&quot; foi processado e registrado no banco de dados.
+                    Os documentos ({sucesso.arquivos?.length || 1} anexo(s)) foram processados e registrados no banco de dados.
                     A proposta já está na esteira técnica e você pode acompanhar o status da análise.
                   </p>
                 </div>
@@ -157,13 +175,13 @@ export default function EnviosPage() {
           <section className="neo p-6 sm:p-8">
             <div className="max-w-3xl space-y-2 mb-6">
               <span className="inline-block text-xs font-bold uppercase tracking-wider text-[#8E1218] bg-red-100 px-2.5 py-0.5 rounded-full">
-                Submissão via PDF
+                Submissão Multi-arquivo (PDF e CSV)
               </span>
               <h2 className="font-display text-2xl text-[#2C3138]">
                 Cadastrar Proposta de Inovação
               </h2>
               <p className="text-sm text-[#5E6570]">
-                Envie o documento técnico da proposta em PDF. O agente de IA extrairá o conteúdo para avaliar
+                Envie um ou mais documentos técnicos em PDF e planilhas de dados em CSV. O agente de IA extrairá os dados combinados para avaliar
                 os 5 critérios do Manual de Frascati (Novidade, Criatividade, Sistemático, Transferibilidade e Incerteza)
                 e submeter à decisão do analista técnico.
               </p>
@@ -216,43 +234,88 @@ export default function EnviosPage() {
                 </div>
               </div>
 
-              {/* Upload de Arquivo PDF */}
+              {/* Upload de Múltiplos Arquivos PDF e CSV */}
               <div className="space-y-3">
-                <label className="text-xs font-semibold text-[#5E6570]">
-                  Arquivo PDF da Proposta Técnica <span className="text-[#C4161C]">*</span>
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-[#5E6570]">
+                    Arquivos da Proposta Técnica e Dados (PDF e/ou CSV) <span className="text-[#C4161C]">*</span>
+                  </label>
+                  <span className="text-[11px] text-[#5E6570]">
+                    {arquivos.length} arquivo(s) selecionado(s) · Total: {formatarBytes(arquivos.reduce((acc, a) => acc + a.size, 0))}
+                  </span>
+                </div>
 
                 <div className="neo-inset flex flex-col items-center justify-center p-8 border border-dashed border-[#B8BAC2] text-center gap-3">
-                  <span className="text-4xl">📄</span>
+                  <span className="text-4xl">📁</span>
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-[#2C3138]">
-                      Selecione o arquivo PDF contendo a descrição completa do projeto
+                      Selecione um ou mais arquivos PDF e planilhas CSV
                     </p>
                     <p className="text-xs text-[#5E6570]">
-                      Formatos aceitos: <strong>PDF</strong> (máximo de 10 MB).
-                      O documento deve conter contextualização, metodologia, incertezas técnicas e resultados esperados.
+                      Formatos aceitos: <strong>PDF</strong> e <strong>CSV</strong> (até 15 MB por arquivo, limite de 30 MB total).
+                      Você pode selecionar múltiplos arquivos simultaneamente ou adicionar gradualmente.
                     </p>
                   </div>
 
                   <input
-                    id="input-arquivo-pdf"
+                    id="input-arquivos-multiplos"
                     type="file"
-                    accept=".pdf,application/pdf"
-                    onChange={aoSelecionarArquivo}
+                    multiple
+                    accept=".pdf,.csv,application/pdf,text/csv"
+                    onChange={aoSelecionarArquivos}
                     className="hidden"
                   />
 
                   <label
-                    htmlFor="input-arquivo-pdf"
+                    htmlFor="input-arquivos-multiplos"
                     className="btn-neo text-xs px-4 py-2 cursor-pointer font-semibold hover:text-[#8E1218]"
                   >
-                    {arquivo ? "Trocar Arquivo Selecionado" : "Escolher Arquivo PDF"}
+                    + Adicionar Arquivos (PDF / CSV)
                   </label>
 
-                  {arquivo ? (
-                    <div className="flex items-center gap-2 mt-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-900 font-medium">
-                      <span>✓ {arquivo.name}</span>
-                      <span className="text-emerald-700">({formatarBytes(arquivo.size)})</span>
+                  {/* Lista de Arquivos Selecionados */}
+                  {arquivos.length > 0 ? (
+                    <div className="w-full mt-4 space-y-2 text-left">
+                      <div className="text-xs font-bold text-[#5E6570] uppercase tracking-wider">
+                        Arquivos a serem enviados:
+                      </div>
+                      <div className="grid gap-2">
+                        {arquivos.map((file, idx) => {
+                          const ehCsv = file.name.toLowerCase().endsWith(".csv");
+                          return (
+                            <div
+                              key={`${file.name}-${idx}`}
+                              className="flex items-center justify-between p-2.5 bg-white border border-[#D9DCE3] rounded-md text-xs shadow-xs"
+                            >
+                              <div className="flex items-center gap-2 overflow-hidden">
+                                <span
+                                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                    ehCsv
+                                      ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                                      : "bg-red-100 text-[#8E1218] border border-red-300"
+                                  }`}
+                                >
+                                  {ehCsv ? "CSV" : "PDF"}
+                                </span>
+                                <span className="font-medium text-[#2C3138] truncate max-w-xs sm:max-w-md">
+                                  {file.name}
+                                </span>
+                                <span className="text-[#5E6570]">
+                                  ({formatarBytes(file.size)})
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removerArquivo(idx)}
+                                className="text-red-600 hover:text-red-800 font-bold px-2 py-1 rounded hover:bg-red-50 text-xs transition-colors"
+                                title="Remover este arquivo"
+                              >
+                                ✕ Remover
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   ) : null}
                 </div>
@@ -262,9 +325,9 @@ export default function EnviosPage() {
               <div className="neo-inset p-4 text-xs text-[#5E6570] space-y-1.5">
                 <strong className="text-[#8E1218]">Critérios de Elegibilidade (Lei do Bem / Manual de Frascati):</strong>
                 <p>
-                  O agente de IA avaliará a proposta nos 5 pontos principais: <strong>Novidade</strong> (avanço em relação ao estado do conhecimento),
-                  <strong> Criatividade</strong> (geração de ganhos e abordagens não triviais), <strong>Sistemático</strong> (planejamento, testes e registros estruturados),
-                  <strong> Transferibilidade</strong> (capacidade de replicação do conhecimento) e <strong>Incerteza</strong> (superação de desafios e riscos tecnológicos).
+                  O agente de IA avaliará todo o conteúdo somado dos PDFs e planilhas CSV nos 5 critérios: <strong>Novidade</strong> (avanço em relação ao estado da técnica),
+                  <strong> Criatividade</strong> (abordagens não triviais), <strong>Sistemático</strong> (planejamento, testes, métricas e rastreabilidade),
+                  <strong> Transferibilidade</strong> (capacidade de replicação) e <strong>Incerteza</strong> (riscos tecnológicos e hipóteses científicas).
                 </p>
               </div>
 
@@ -276,10 +339,10 @@ export default function EnviosPage() {
                 <BotaoPrimario
                   type="submit"
                   loading={enviando}
-                  loadingText="Enviando e Processando..."
-                  disabled={!titulo.trim() || !arquivo || enviando}
+                  loadingText="Enviando e Processando com IA..."
+                  disabled={!titulo.trim() || arquivos.length === 0 || enviando}
                 >
-                  Enviar Proposta de Inovação →
+                  Enviar Proposta de Inovação ({arquivos.length} anexo(s)) →
                 </BotaoPrimario>
               </div>
             </form>
@@ -293,7 +356,7 @@ export default function EnviosPage() {
               <p className="text-sm text-[#5E6570]">Carregando histórico de propostas...</p>
             ) : propostas.length === 0 ? (
               <div className="neo p-6 text-center text-sm text-[#5E6570]">
-                Você ainda não submeteu propostas de inovação. Preencha o formulário acima para enviar seu primeiro PDF.
+                Você ainda não submeteu propostas de inovação. Preencha o formulário acima para enviar seus arquivos.
               </div>
             ) : (
               <div className="grid gap-4">
@@ -321,7 +384,7 @@ export default function EnviosPage() {
                           </div>
                           <h4 className="font-display text-base font-bold text-[#2C3138]">{prop.titulo}</h4>
                           <p className="text-xs text-[#5E6570]">
-                            Arquivo: <span className="font-mono">{prop.nomeArquivo}</span> (versão {prop.versaoEnvio})
+                            Arquivos: <span className="font-mono">{prop.nomeArquivo}</span> ({prop.arquivos?.length || 1} anexo(s) · versão {prop.versaoEnvio})
                           </p>
                         </div>
                       </div>

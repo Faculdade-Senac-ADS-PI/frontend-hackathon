@@ -439,19 +439,43 @@ export default function Analista() {
                           </span>
                         </div>
 
-                        <div className="pt-2 border-t border-[#D9DCE3] flex flex-wrap items-center justify-between gap-2 text-xs">
-                          <span className="text-[#5E6570]">
-                            Arquivo: <strong className="font-mono">{casoSelecionado.nomeArquivo}</strong> (
-                            {formatarBytes(casoSelecionado.tamanhoBytes)}) · {casoSelecionado.versaoEnvio}ª versão
-                          </span>
-                          <a
-                            href={`/api/projetos/${casoSelecionado.id}/arquivo`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn-neo text-xs px-2.5 py-1 text-[#8E1218] font-bold"
-                          >
-                            📥 Baixar / Visualizar PDF
-                          </a>
+                        <div className="pt-2 border-t border-[#D9DCE3] flex flex-col gap-2 text-xs">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="text-[#5E6570]">
+                              Documentos ({casoSelecionado.arquivos?.length || 1} anexo(s)): <strong className="font-mono">{casoSelecionado.nomeArquivo}</strong> (
+                              {formatarBytes(casoSelecionado.tamanhoBytes)}) · {casoSelecionado.versaoEnvio}ª versão
+                            </span>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            {casoSelecionado.arquivos && casoSelecionado.arquivos.length > 0 ? (
+                              casoSelecionado.arquivos.map((arq) => {
+                                const ehCsv = arq.extensao === ".csv";
+                                return (
+                                  <a
+                                    key={arq.id}
+                                    href={`/api/projetos/${casoSelecionado.id}/arquivos/${arq.id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn-neo text-xs px-2.5 py-1 text-[#2C3138] font-semibold hover:text-[#8E1218] inline-flex items-center gap-1.5"
+                                  >
+                                    <span>{ehCsv ? "📊" : "📄"}</span>
+                                    <span className="font-mono">{arq.nome}</span>
+                                    <span className="text-[10px] text-[#5E6570]">({formatarBytes(arq.tamanhoBytes)})</span>
+                                  </a>
+                                );
+                              })
+                            ) : (
+                              <a
+                                href={`/api/projetos/${casoSelecionado.id}/arquivo`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-neo text-xs px-2.5 py-1 text-[#8E1218] font-bold"
+                              >
+                                📥 Baixar / Visualizar Arquivo Principal
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </div>
 

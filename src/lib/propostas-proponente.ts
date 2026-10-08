@@ -7,6 +7,14 @@ export type StatusProjeto =
   | "Reprovado"
   | "Reanalise";
 
+export type ArquivoItemResposta = {
+  id: string;
+  nome: string;
+  tamanhoBytes: number;
+  extensao: string;
+  criadoEm: string;
+};
+
 /** Visão limpa do proponente: status, resultado e histórico de versões. Não exibe nota interna da IA. */
 export type ProjetoProponenteResposta = {
   id: string;
@@ -14,6 +22,7 @@ export type ProjetoProponenteResposta = {
   titulo: string;
   setor: string;
   nomeArquivo: string;
+  arquivos?: ArquivoItemResposta[];
   versaoEnvio: number;
   status: StatusProjeto;
   justificativaAnalista?: string | null;
@@ -32,7 +41,7 @@ export type CriterioAvaliadoResposta = {
   justificativa?: string | null;
 };
 
-/** Visão completa do analista: notas da IA, resumo, justificativas por critério e arquivo PDF. */
+/** Visão completa do analista: notas da IA, resumo, justificativas por critério e anexos PDF/CSV. */
 export type ProjetoAnaliseResposta = {
   id: string;
   protocolo: string;
@@ -45,6 +54,7 @@ export type ProjetoAnaliseResposta = {
   proponenteEmail: string;
   nomeArquivo: string;
   tamanhoBytes: number;
+  arquivos?: ArquivoItemResposta[];
   notaIa?: number | null;
   recomendacaoIa?: string | null;
   resumoIa?: string | null;
@@ -114,16 +124,18 @@ export function corBadgeStatus(status: StatusProjeto): {
 // Chamadas de API ao Backend
 // -------------------------------------------------------------
 
-/** Envia nova proposta em PDF com Título e Setor. */
-export async function enviarPropostaPdf(
+/** Envia nova proposta com múltiplos arquivos (PDF e CSV). */
+export async function enviarPropostaArquivos(
   titulo: string,
   setor: string,
-  arquivo: File
+  arquivos: File[]
 ): Promise<ProjetoProponenteResposta> {
   const form = new FormData();
   form.append("Titulo", titulo);
   form.append("Setor", setor);
-  form.append("Arquivo", arquivo);
+  for (const arquivo of arquivos) {
+    form.append("Arquivos", arquivo);
+  }
 
   return await api<ProjetoProponenteResposta>("/api/projetos/upload", {
     method: "POST",
@@ -131,18 +143,37 @@ export async function enviarPropostaPdf(
   });
 }
 
-/** Reenvia nova versão de PDF quando a proposta está em Reanálise. */
-export async function reenviarPropostaPdf(
-  projetoId: string,
+/** Compatibilidade: envia com um único PDF. */
+export async function enviarPropostaPdf(
+  titulo: string,
+  setor: string,
   arquivo: File
 ): Promise<ProjetoProponenteResposta> {
+  return await enviarPropostaArquivos(titulo, setor, [arquivo]);
+}
+
+/** Reenvia múltiplos arquivos de proposta quando em Reanálise. */
+export async function reenviarPropostaArquivos(
+  projetoId: string,
+  arquivos: File[]
+): Promise<ProjetoProponenteResposta> {
   const form = new FormData();
-  form.append("Arquivo", arquivo);
+  for (const arquivo of arquivos) {
+    form.append("Arquivos", arquivo);
+  }
 
   return await api<ProjetoProponenteResposta>(`/api/projetos/${projetoId}/reenviar`, {
     method: "POST",
     body: form,
   });
+}
+
+/** Compatibilidade: reenvia único arquivo. */
+export async function reenviarPropostaPdf(
+  projetoId: string,
+  arquivo: File
+): Promise<ProjetoProponenteResposta> {
+  return await reenviarPropostaArquivos(projetoId, [arquivo]);
 }
 
 /** Lista as propostas submetidas pelo proponente logado. */
