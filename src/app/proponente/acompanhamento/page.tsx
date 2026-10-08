@@ -152,13 +152,13 @@ function ConteudoAcompanhamento() {
               {/* Barra Lateral com a Lista de Propostas */}
               <aside className="lg:col-span-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-display text-base font-bold text-[#2C3138]">
+                  <h3 className="font-display text-base font-bold text-[#333333]">
                     Minhas Propostas ({propostas.length})
                   </h3>
                   <button
                     type="button"
                     onClick={() => void recarregar()}
-                    className="text-xs text-[#8E1218] hover:underline font-semibold"
+                    className="text-xs text-[#8a1533] hover:underline font-semibold"
                   >
                     ↻ Atualizar
                   </button>
@@ -176,12 +176,12 @@ function ConteudoAcompanhamento() {
                         onClick={() => setSelecionadaId(prop.id)}
                         className={`text-left p-3.5 rounded-lg border transition-all ${
                           ativa
-                            ? "bg-white border-[#8E1218] shadow-md ring-1 ring-[#8E1218]"
-                            : "neo hover:border-[#8E1218]/40"
+                            ? "bg-white border-[#8a1533] shadow-md ring-1 ring-[#8a1533]"
+                            : "neo hover:border-[#8a1533]/40"
                         }`}
                       >
                         <div className="flex items-center justify-between gap-1 mb-1.5">
-                          <span className="font-mono text-[11px] font-bold text-[#8E1218]">
+                          <span className="font-mono text-[11px] font-bold text-[#8a1533]">
                             {prop.protocolo}
                           </span>
                           <span
@@ -190,10 +190,10 @@ function ConteudoAcompanhamento() {
                             {rotuloStatus(prop.status)}
                           </span>
                         </div>
-                        <h4 className="text-xs font-bold text-[#2C3138] line-clamp-2 mb-1">
+                        <h4 className="text-xs font-bold text-[#333333] line-clamp-2 mb-1">
                           {prop.titulo}
                         </h4>
-                        <div className="flex items-center justify-between text-[11px] text-[#5E6570]">
+                        <div className="flex items-center justify-between text-[11px] text-[#727c81]">
                           <span>{prop.setor}</span>
                           <span>v{prop.versaoEnvio}</span>
                         </div>
@@ -215,12 +215,12 @@ function ConteudoAcompanhamento() {
                   <>
                     {/* Cabeçalho do Projeto */}
                     <section className="neo p-6 space-y-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#D9DCE3] pb-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#ebebeb] pb-3">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm font-bold text-[#C4161C] bg-red-50 px-2.5 py-1 rounded border border-red-200">
+                          <span className="font-mono text-sm font-bold text-[#a6193c] bg-red-50 px-2.5 py-1 rounded border border-red-200">
                             {propostaAtual.protocolo}
                           </span>
-                          <span className="text-xs text-[#5E6570]">
+                          <span className="text-xs text-[#727c81]">
                             Enviado em {new Date(propostaAtual.criadoEm).toLocaleDateString("pt-BR")}
                           </span>
                         </div>
@@ -239,8 +239,8 @@ function ConteudoAcompanhamento() {
                       </div>
 
                       <div className="space-y-1">
-                        <h2 className="font-display text-2xl font-bold text-[#2C3138]">{propostaAtual.titulo}</h2>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-[#5E6570]">
+                        <h2 className="font-display text-2xl font-bold text-[#333333]">{propostaAtual.titulo}</h2>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-[#727c81]">
                           <span>
                             Setor: <strong>{propostaAtual.setor}</strong>
                           </span>
@@ -253,7 +253,7 @@ function ConteudoAcompanhamento() {
 
                       {/* Download dos Arquivos Anexados */}
                       <div className="pt-2 space-y-2">
-                        <span className="text-xs font-bold text-[#5E6570] uppercase tracking-wider">
+                        <span className="text-xs font-bold text-[#727c81] uppercase tracking-wider">
                           Arquivos Anexados ({propostaAtual.arquivos?.length || 1}):
                         </span>
                         <div className="flex flex-wrap gap-2">
@@ -266,11 +266,11 @@ function ConteudoAcompanhamento() {
                                   href={`/api/projetos/${propostaAtual.id}/arquivos/${arq.id}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="btn-neo text-xs px-3 py-1.5 inline-flex items-center gap-1.5 text-[#2C3138] font-semibold hover:text-[#8E1218]"
+                                  className="btn-neo text-xs px-3 py-1.5 inline-flex items-center gap-1.5 text-[#333333] font-semibold hover:text-[#8a1533]"
                                 >
                                   <span>{ehCsv ? "📊" : "📄"}</span>
                                   <span className="max-w-xs truncate">{arq.nome}</span>
-                                  <span className="text-[10px] text-[#5E6570]">({formatarBytes(arq.tamanhoBytes)})</span>
+                                  <span className="text-[10px] text-[#727c81]">({formatarBytes(arq.tamanhoBytes)})</span>
                                 </a>
                               );
                             })
@@ -279,7 +279,7 @@ function ConteudoAcompanhamento() {
                               href={`/api/projetos/${propostaAtual.id}/arquivo`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="btn-neo text-xs px-3.5 py-2 inline-flex items-center gap-2 text-[#8E1218] font-semibold"
+                              className="btn-neo text-xs px-3.5 py-2 inline-flex items-center gap-2 text-[#8a1533] font-semibold"
                             >
                               📥 Baixar Documento Original ({propostaAtual.nomeArquivo})
                             </a>
@@ -290,7 +290,7 @@ function ConteudoAcompanhamento() {
 
                     {/* Bloco de Status da Análise */}
                     <section className="neo p-6 space-y-4">
-                      <h3 className="font-display text-lg font-bold text-[#2C3138]">
+                      <h3 className="font-display text-lg font-bold text-[#333333]">
                         Status da Deliberação Técnica
                       </h3>
 
@@ -320,11 +320,11 @@ function ConteudoAcompanhamento() {
                         </div>
                       ) : null}
 
-                      {propostaAtual.status === "Aprovado" ? (
+                      {propostaAtual.status === "Elegivel" ? (
                         <div className="neo-inset p-4 space-y-2 border-l-4 border-emerald-600 bg-emerald-50/50">
                           <div className="flex items-center gap-2">
                             <span className="text-xl">🎉</span>
-                            <strong className="text-emerald-900 text-sm">Proposta Aprovada para a Lei do Bem!</strong>
+                            <strong className="text-emerald-900 text-sm">Proposta Elegível para a Lei do Bem!</strong>
                           </div>
                           <p className="text-xs text-emerald-800 leading-relaxed">
                             Parabéns! Sua proposta foi chancelada tecnicamente como elegível aos incentivos fiscais de P&D
@@ -339,19 +339,58 @@ function ConteudoAcompanhamento() {
                         </div>
                       ) : null}
 
-                      {propostaAtual.status === "Reprovado" ? (
+                      {propostaAtual.status === "ComRessalvas" ? (
+                        <div className="neo-inset p-4 space-y-2 border-l-4 border-orange-500 bg-orange-50/50">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">⚠️</span>
+                            <strong className="text-orange-900 text-sm">Proposta Elegível com Ressalvas</strong>
+                          </div>
+                          <p className="text-xs text-orange-800 leading-relaxed">
+                            O analista reconheceu P&D no projeto, mas apontou uma limitação concreta que restringe parte
+                            da conclusão. Veja o recorte e o que precisa ser complementado.
+                          </p>
+                          {propostaAtual.justificativaAnalista ? (
+                            <div className="mt-2 pt-2 border-t border-orange-200">
+                              <span className="text-[11px] font-bold uppercase text-orange-900">Parecer do Analista:</span>
+                              <p className="text-xs text-orange-800 mt-0.5 whitespace-pre-wrap">{propostaAtual.justificativaAnalista}</p>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+
+                      {propostaAtual.status === "NaoElegivel" ? (
                         <div className="neo-inset p-4 space-y-2 border-l-4 border-red-600 bg-red-50/50">
                           <div className="flex items-center gap-2">
                             <span className="text-xl">❌</span>
-                            <strong className="text-red-900 text-sm">Proposta Não Aprovada</strong>
+                            <strong className="text-red-900 text-sm">Proposta Não Elegível</strong>
                           </div>
                           <p className="text-xs text-red-800 leading-relaxed">
-                            O analista técnico revisou os documentos e concluiu que o projeto não atende aos requisitos necessários para enquadramento na Lei do Bem.
+                            O analista técnico revisou os documentos e concluiu que o projeto não atende aos requisitos de
+                            P&D necessários para enquadramento na Lei do Bem.
                           </p>
                           {propostaAtual.justificativaAnalista ? (
                             <div className="mt-2 pt-2 border-t border-red-200">
                               <span className="text-[11px] font-bold uppercase text-red-900">Motivo da Decisão:</span>
                               <p className="text-xs text-red-800 mt-0.5 whitespace-pre-wrap">{propostaAtual.justificativaAnalista}</p>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+
+                      {propostaAtual.status === "EvidenciaInsuficiente" ? (
+                        <div className="neo-inset p-4 space-y-2 border-l-4 border-slate-500 bg-slate-100/60">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">🔎</span>
+                            <strong className="text-slate-800 text-sm">Evidência Insuficiente — complementação necessária</strong>
+                          </div>
+                          <p className="text-xs text-slate-700 leading-relaxed">
+                            Faltou informação essencial para o analista caracterizar ou verificar o núcleo da proposta.
+                            Reúna as evidências adicionais e reenvie o dossiê para uma nova análise.
+                          </p>
+                          {propostaAtual.justificativaAnalista ? (
+                            <div className="mt-2 pt-2 border-t border-slate-300">
+                              <span className="text-[11px] font-bold uppercase text-slate-700">Orientação do Analista:</span>
+                              <p className="text-xs text-slate-700 mt-0.5 whitespace-pre-wrap">{propostaAtual.justificativaAnalista}</p>
                             </div>
                           ) : null}
                         </div>
@@ -379,10 +418,10 @@ function ConteudoAcompanhamento() {
 
                           {/* Formulário de Reenvio de Arquivos */}
                           <div className="neo p-5 space-y-3">
-                            <h4 className="font-display text-base font-bold text-[#2C3138]">
+                            <h4 className="font-display text-base font-bold text-[#333333]">
                               Submeter Versão Revisada da Proposta (v{propostaAtual.versaoEnvio + 1})
                             </h4>
-                            <p className="text-xs text-[#5E6570]">
+                            <p className="text-xs text-[#727c81]">
                               Faça os ajustes apontados pelo analista nos seus documentos e envie os arquivos atualizados (PDF e/ou CSV) abaixo.
                             </p>
 
@@ -390,7 +429,7 @@ function ConteudoAcompanhamento() {
                             {erroReenvio ? <Aviso tipo="error" texto={erroReenvio} /> : null}
 
                             <form onSubmit={reenviar} className="flex flex-col gap-3">
-                              <div className="neo-inset flex flex-col items-center justify-center p-5 border border-dashed border-[#B8BAC2] text-center gap-2">
+                              <div className="neo-inset flex flex-col items-center justify-center p-5 border border-dashed border-[#c8c9ca] text-center gap-2">
                                 <input
                                   id="input-reenvio-arquivos"
                                   type="file"
@@ -402,7 +441,7 @@ function ConteudoAcompanhamento() {
 
                                 <label
                                   htmlFor="input-reenvio-arquivos"
-                                  className="btn-neo text-xs px-3 py-1.5 cursor-pointer font-semibold hover:text-[#8E1218]"
+                                  className="btn-neo text-xs px-3 py-1.5 cursor-pointer font-semibold hover:text-[#8a1533]"
                                 >
                                   + Selecionar Arquivos Revisados (PDF / CSV)
                                 </label>

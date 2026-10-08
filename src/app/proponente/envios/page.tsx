@@ -174,13 +174,13 @@ export default function EnviosPage() {
           {/* Formulário de Envio Neumorphic */}
           <section className="neo p-6 sm:p-8">
             <div className="max-w-3xl space-y-2 mb-6">
-              <span className="inline-block text-xs font-bold uppercase tracking-wider text-[#8E1218] bg-red-100 px-2.5 py-0.5 rounded-full">
+              <span className="inline-block text-xs font-bold uppercase tracking-wider text-[#8a1533] bg-red-100 px-2.5 py-0.5 rounded-full">
                 Submissão Multi-arquivo (PDF e CSV)
               </span>
-              <h2 className="font-display text-2xl text-[#2C3138]">
+              <h2 className="font-display text-2xl text-[#333333]">
                 Cadastrar Proposta de Inovação
               </h2>
-              <p className="text-sm text-[#5E6570]">
+              <p className="text-sm text-[#727c81]">
                 Envie um ou mais documentos técnicos em PDF e planilhas de dados em CSV. O agente de IA extrairá os dados combinados para avaliar
                 os 5 critérios do Manual de Frascati (Novidade, Criatividade, Sistemático, Transferibilidade e Incerteza)
                 e submeter à decisão do analista técnico.
@@ -200,8 +200,8 @@ export default function EnviosPage() {
                 />
 
                 <div className="space-y-1">
-                  <label htmlFor="setor-select" className="text-xs font-semibold text-[#5E6570]">
-                    Setor / Área da Empresa Solicitante <span className="text-[#C4161C]">*</span>
+                  <label htmlFor="setor-select" className="text-xs font-semibold text-[#727c81]">
+                    Setor / Área da Empresa Solicitante <span className="text-[#a6193c]">*</span>
                   </label>
                   <NativeSelect.Root size="sm" width="full">
                     <NativeSelect.Field
@@ -237,21 +237,21 @@ export default function EnviosPage() {
               {/* Upload de Múltiplos Arquivos PDF e CSV */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-[#5E6570]">
-                    Arquivos da Proposta Técnica e Dados (PDF e/ou CSV) <span className="text-[#C4161C]">*</span>
+                  <label className="text-xs font-semibold text-[#727c81]">
+                    Arquivos da Proposta Técnica e Dados (PDF e/ou CSV) <span className="text-[#a6193c]">*</span>
                   </label>
-                  <span className="text-[11px] text-[#5E6570]">
+                  <span className="text-[11px] text-[#727c81]">
                     {arquivos.length} arquivo(s) selecionado(s) · Total: {formatarBytes(arquivos.reduce((acc, a) => acc + a.size, 0))}
                   </span>
                 </div>
 
-                <div className="neo-inset flex flex-col items-center justify-center p-8 border border-dashed border-[#B8BAC2] text-center gap-3">
+                <div className="neo-inset flex flex-col items-center justify-center p-8 border border-dashed border-[#c8c9ca] text-center gap-3">
                   <span className="text-4xl">📁</span>
                   <div className="space-y-1">
-                    <p className="text-sm font-semibold text-[#2C3138]">
+                    <p className="text-sm font-semibold text-[#333333]">
                       Selecione um ou mais arquivos PDF e planilhas CSV
                     </p>
-                    <p className="text-xs text-[#5E6570]">
+                    <p className="text-xs text-[#727c81]">
                       Formatos aceitos: <strong>PDF</strong> e <strong>CSV</strong> (até 15 MB por arquivo, limite de 30 MB total).
                       Você pode selecionar múltiplos arquivos simultaneamente ou adicionar gradualmente.
                     </p>
@@ -268,7 +268,7 @@ export default function EnviosPage() {
 
                   <label
                     htmlFor="input-arquivos-multiplos"
-                    className="btn-neo text-xs px-4 py-2 cursor-pointer font-semibold hover:text-[#8E1218]"
+                    className="btn-neo text-xs px-4 py-2 cursor-pointer font-semibold hover:text-[#8a1533]"
                   >
                     + Adicionar Arquivos (PDF / CSV)
                   </label>
@@ -276,7 +276,7 @@ export default function EnviosPage() {
                   {/* Lista de Arquivos Selecionados */}
                   {arquivos.length > 0 ? (
                     <div className="w-full mt-4 space-y-2 text-left">
-                      <div className="text-xs font-bold text-[#5E6570] uppercase tracking-wider">
+                      <div className="text-xs font-bold text-[#727c81] uppercase tracking-wider">
                         Arquivos a serem enviados:
                       </div>
                       <div className="grid gap-2">
@@ -285,22 +285,22 @@ export default function EnviosPage() {
                           return (
                             <div
                               key={`${file.name}-${idx}`}
-                              className="flex items-center justify-between p-2.5 bg-white border border-[#D9DCE3] rounded-md text-xs shadow-xs"
+                              className="flex items-center justify-between p-2.5 bg-white border border-[#ebebeb] rounded-md text-xs shadow-xs"
                             >
                               <div className="flex items-center gap-2 overflow-hidden">
                                 <span
                                   className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                                     ehCsv
                                       ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                                      : "bg-red-100 text-[#8E1218] border border-red-300"
+                                      : "bg-red-100 text-[#8a1533] border border-red-300"
                                   }`}
                                 >
                                   {ehCsv ? "CSV" : "PDF"}
                                 </span>
-                                <span className="font-medium text-[#2C3138] truncate max-w-xs sm:max-w-md">
+                                <span className="font-medium text-[#333333] truncate max-w-xs sm:max-w-md">
                                   {file.name}
                                 </span>
-                                <span className="text-[#5E6570]">
+                                <span className="text-[#727c81]">
                                   ({formatarBytes(file.size)})
                                 </span>
                               </div>
@@ -322,8 +322,8 @@ export default function EnviosPage() {
               </div>
 
               {/* Orientações sobre a Lei do Bem */}
-              <div className="neo-inset p-4 text-xs text-[#5E6570] space-y-1.5">
-                <strong className="text-[#8E1218]">Critérios de Elegibilidade (Lei do Bem / Manual de Frascati):</strong>
+              <div className="neo-inset p-4 text-xs text-[#727c81] space-y-1.5">
+                <strong className="text-[#8a1533]">Critérios de Elegibilidade (Lei do Bem / Manual de Frascati):</strong>
                 <p>
                   O agente de IA avaliará todo o conteúdo somado dos PDFs e planilhas CSV nos 5 critérios: <strong>Novidade</strong> (avanço em relação ao estado da técnica),
                   <strong> Criatividade</strong> (abordagens não triviais), <strong>Sistemático</strong> (planejamento, testes, métricas e rastreabilidade),
@@ -332,7 +332,7 @@ export default function EnviosPage() {
               </div>
 
               {/* Botões */}
-              <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-[#D9DCE3]">
+              <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-[#ebebeb]">
                 <BotaoSecundario type="button" onClick={() => router.push("/proponente")}>
                   Cancelar
                 </BotaoSecundario>
@@ -350,12 +350,12 @@ export default function EnviosPage() {
 
           {/* Lista de Envios Anteriores do Proponente */}
           <section className="flex flex-col gap-4">
-            <h3 className="font-display text-xl text-[#2C3138]">Suas Propostas Submetidas</h3>
+            <h3 className="font-display text-xl text-[#333333]">Suas Propostas Submetidas</h3>
 
             {carregandoLista ? (
-              <p className="text-sm text-[#5E6570]">Carregando histórico de propostas...</p>
+              <p className="text-sm text-[#727c81]">Carregando histórico de propostas...</p>
             ) : propostas.length === 0 ? (
-              <div className="neo p-6 text-center text-sm text-[#5E6570]">
+              <div className="neo p-6 text-center text-sm text-[#727c81]">
                 Você ainda não submeteu propostas de inovação. Preencha o formulário acima para enviar seus arquivos.
               </div>
             ) : (
@@ -369,10 +369,10 @@ export default function EnviosPage() {
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                         <div className="space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-mono text-xs font-bold text-[#C4161C] bg-red-50 px-2 py-0.5 rounded border border-red-200">
+                            <span className="font-mono text-xs font-bold text-[#a6193c] bg-red-50 px-2 py-0.5 rounded border border-red-200">
                               {prop.protocolo}
                             </span>
-                            <span className="text-xs text-[#5E6570]">Enviado em {dataEnvioFormatada}</span>
+                            <span className="text-xs text-[#727c81]">Enviado em {dataEnvioFormatada}</span>
                             <span className="text-xs font-medium text-slate-700 bg-slate-200 px-2 py-0.5 rounded-full">
                               {prop.setor}
                             </span>
@@ -382,27 +382,27 @@ export default function EnviosPage() {
                               {rotuloStatus(prop.status)}
                             </span>
                           </div>
-                          <h4 className="font-display text-base font-bold text-[#2C3138]">{prop.titulo}</h4>
-                          <p className="text-xs text-[#5E6570]">
+                          <h4 className="font-display text-base font-bold text-[#333333]">{prop.titulo}</h4>
+                          <p className="text-xs text-[#727c81]">
                             Arquivos: <span className="font-mono">{prop.nomeArquivo}</span> ({prop.arquivos?.length || 1} anexo(s) · versão {prop.versaoEnvio})
                           </p>
                         </div>
                       </div>
 
                       {prop.justificativaAnalista ? (
-                        <div className="neo-inset p-3 text-xs text-[#4A515C]">
-                          <strong className="text-[#8E1218]">Retorno do Analista:</strong>
+                        <div className="neo-inset p-3 text-xs text-[#4a4a4a]">
+                          <strong className="text-[#8a1533]">Retorno do Analista:</strong>
                           <p className="mt-0.5">{prop.justificativaAnalista}</p>
                         </div>
                       ) : null}
 
-                      <div className="flex items-center justify-between pt-2 border-t border-[#D9DCE3] text-xs">
-                        <span className="text-[#5E6570]">
+                      <div className="flex items-center justify-between pt-2 border-t border-[#ebebeb] text-xs">
+                        <span className="text-[#727c81]">
                           Status: <strong>{rotuloStatus(prop.status)}</strong>
                         </span>
                         <Link
                           href={`/proponente/acompanhamento?caso=${prop.id}`}
-                          className="font-semibold text-[#8E1218] hover:underline"
+                          className="font-semibold text-[#8a1533] hover:underline"
                         >
                           Ver Acompanhamento Completo →
                         </Link>

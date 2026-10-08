@@ -27,7 +27,7 @@ export function Campo({
 }: CampoProps) {
   return (
     <Field.Root invalid={Boolean(erro)} required={obrigatorio}>
-      <Field.Label htmlFor={id} className="text-sm font-semibold text-[#2C3138]">
+      <Field.Label htmlFor={id} className="text-sm font-semibold text-[#333333]">
         {rotulo}
       </Field.Label>
       <Input
@@ -41,7 +41,7 @@ export function Campo({
         className="neo-inset mt-1 h-12 px-4 text-base"
         onChange={(evento) => onChange(evento.target.value)}
       />
-      {erro ? <Field.ErrorText className="mt-1 text-sm text-[#8E1218]">{erro}</Field.ErrorText> : null}
+      {erro ? <Field.ErrorText className="mt-1 text-sm text-[#8a1533]">{erro}</Field.ErrorText> : null}
     </Field.Root>
   );
 }

@@ -2,6 +2,12 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
+/* ============================================================
+   Design System — Modelo institucional Banco do Nordeste (BNB)
+   Cores: #a6193c (vermelho BNB) · #f68b1f (laranja de destaque)
+   Fonte: Heebo
+   ============================================================ */
+
 *,
 *::before,
 *::after {
@@ -31,40 +37,42 @@ figure {
 
 body {
   min-height: 100vh;
-  background: #e6e7eb;
-  color: #2c3138;
-  font-family: var(--font-manrope), "Segoe UI", sans-serif;
+  background: #ffffff;
+  color: #4a4a4a;
+  font-family: var(--font-heebo), "Segoe UI", sans-serif;
+  font-weight: 400;
 }
 
 .font-display {
-  font-family: var(--font-fraunces), Georgia, serif;
-  font-weight: 560;
+  font-family: var(--font-heebo), "Segoe UI", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #333333;
 }
 
+/* Cartão institucional flat (substitui o antigo cartão neumórfico) */
 .neo {
-  background: #f3f4f7;
-  border-radius: 1.35rem;
-  box-shadow:
-    8px 8px 18px #c8cad1,
-    -8px -8px 18px #ffffff;
+  background: #ffffff;
+  border: 1px solid #ebebeb;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+/* Campo/painel embutido (fundo cinza claro com borda) */
 .neo-inset {
   width: 100%;
-  background: #e7e9ee;
-  border: none;
-  border-radius: 0.95rem;
-  box-shadow:
-    inset 5px 5px 10px #c8cad1,
-    inset -5px -5px 10px #ffffff;
-  color: #2c3138;
+  background: #f7f8f9;
+  border: 1px solid #ebebeb;
+  border-radius: 8px;
+  color: #4a4a4a;
 }
 
 .neo-inset:focus {
-  outline: 2px solid #c4161c;
+  outline: 2px solid #a6193c;
   outline-offset: 2px;
 }
 
+/* Botões */
 .btn-red,
 .btn-neo,
 .btn-quiet {
@@ -73,47 +81,59 @@ body {
   justify-content: center;
   gap: 0.5rem;
   max-width: 100%;
-  min-height: 3rem;
-  padding: 0.7rem 1.25rem;
-  border: none;
-  border-radius: 0.95rem;
-  font-weight: 650;
+  min-height: 2.75rem;
+  padding: 0.65rem 1.4rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-family: var(--font-heebo), "Segoe UI", sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
   line-height: 1.3;
   text-align: center;
   white-space: normal;
   cursor: pointer;
   text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .btn-red {
-  background: #c4161c;
+  background: #a6193c;
   color: #ffffff;
-  box-shadow:
-    5px 5px 14px #c8cad1,
-    -4px -4px 12px #ffffff;
+  box-shadow: none;
 }
 
 .btn-red:hover {
-  background: #a51218;
+  background: #8a1533;
+  color: #ffffff;
 }
 
 .btn-neo {
-  background: #f3f4f7;
-  color: #2c3138;
-  box-shadow:
-    5px 5px 14px #c8cad1,
-    -4px -4px 12px #ffffff;
+  background: #ffffff;
+  color: #4a4a4a;
+  border-color: #d3dadd;
+  box-shadow: none;
 }
 
 .btn-neo:hover {
-  color: #8e1218;
+  color: #a6193c;
+  border-color: #a6193c;
 }
 
 .btn-quiet {
   min-height: 2.5rem;
+  padding: 0.5rem 0.9rem;
   background: transparent;
-  color: #8e1218;
+  color: #a6193c;
+  border: none;
   box-shadow: none;
+}
+
+.btn-quiet:hover {
+  background: #fdf0f3;
+  color: #8a1533;
 }
 
 .btn-red:disabled,
@@ -125,6 +145,77 @@ body {
 .btn-red:focus-visible,
 .btn-neo:focus-visible,
 .btn-quiet:focus-visible {
-  outline: 2px solid #2c3138;
+  outline: 2px solid #333333;
   outline-offset: 3px;
+}
+
+/* Barra superior vermelha institucional */
+.barra-bnb {
+  background: #a6193c;
+  height: 6px;
+}
+
+/* Documento de parecer (Markdown renderizado) */
+.parecer-doc h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #a6193c;
+  border-bottom: 2px solid #a6193c;
+  padding-bottom: 0.4rem;
+}
+
+.parecer-doc h2 {
+  margin-top: 1.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #8a1533;
+  border-bottom: 1px solid #ebebeb;
+  padding-bottom: 0.25rem;
+}
+
+.parecer-doc h3 {
+  margin-top: 1rem;
+  font-weight: 700;
+  color: #333333;
+}
+
+.parecer-doc p,
+.parecer-doc li {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: #333333;
+}
+
+.parecer-doc p {
+  margin-bottom: 0.4rem;
+}
+
+.parecer-doc ul {
+  list-style: disc;
+  padding-left: 1.15rem;
+  margin: 0.35rem 0;
+}
+
+.parecer-doc li {
+  margin-bottom: 0.15rem;
+}
+
+.parecer-doc blockquote {
+  border-left: 4px solid #f68b1f;
+  background: #fbf7f1;
+  padding: 0.5rem 0.8rem;
+  margin: 0.5rem 0;
+  font-style: italic;
+}
+
+.parecer-doc hr {
+  border: none;
+  border-top: 1px solid #ebebeb;
+  margin: 1rem 0;
+}
+
+.parecer-doc strong {
+  color: #222222;
 }

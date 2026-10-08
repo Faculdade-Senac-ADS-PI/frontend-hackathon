@@ -6,8 +6,8 @@ import { BotaoSecundario } from "@/components/botoes";
 export function EstadoCarregando({ texto }: { texto: string }) {
   return (
     <Center minH="50vh" flexDirection="column" gap="3">
-      <Spinner color="#C4161C" size="lg" borderWidth="3px" />
-      <Text color="#5E6570">{texto}</Text>
+      <Spinner color="#a6193c" size="lg" borderWidth="3px" />
+      <Text color="#727c81">{texto}</Text>
     </Center>
   );
 }
@@ -19,7 +19,7 @@ export function EstadoErro({ texto, onTentar }: { texto: string; onTentar?: () =
         <Alert.Indicator />
         <Alert.Content>
           <Alert.Title className="font-display text-xl">Algo saiu do lugar</Alert.Title>
-          <Alert.Description className="mt-1 text-[#2C3138]">{texto}</Alert.Description>
+          <Alert.Description className="mt-1 text-[#333333]">{texto}</Alert.Description>
         </Alert.Content>
       </Alert.Root>
       {onTentar ? (
@@ -45,8 +45,8 @@ export function EstadoVazio({
   return (
     <EmptyState.Root className="neo-inset px-4 py-8 sm:px-6 sm:py-10">
       <EmptyState.Content>
-        <EmptyState.Title className="font-display text-2xl text-[#2C3138]">{titulo}</EmptyState.Title>
-        <EmptyState.Description className="mt-3 max-w-2xl text-base leading-relaxed text-[#5E6570]">
+        <EmptyState.Title className="font-display text-2xl text-[#333333]">{titulo}</EmptyState.Title>
+        <EmptyState.Description className="mt-3 max-w-2xl text-base leading-relaxed text-[#727c81]">
           {texto}
         </EmptyState.Description>
         {children ? <div className="mt-5">{children}</div> : null}

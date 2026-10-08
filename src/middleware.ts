@@ -29,7 +29,9 @@ export async function middleware(requisicao: NextRequest) {
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico" ||
-    pathname === "/icon.svg"
+    pathname === "/icon.svg" ||
+    // Arquivos estáticos (logo, imagens) nunca passam por autenticação
+    pathname.includes(".")
   ) {
     return NextResponse.next();
   }

@@ -51,9 +51,9 @@ export default function Entrar() {
           Entrar
         </BotaoPrimario>
       </form>
-      <p className="text-sm text-[#5E6570]">
+      <p className="text-sm text-[#727c81]">
         Vai enviar um projeto?{" "}
-        <Link href="/cadastrar" className="font-semibold text-[#8E1218]">
+        <Link href="/cadastrar" className="font-semibold text-[#8a1533]">
           Cadastre-se como proponente
         </Link>
         .
