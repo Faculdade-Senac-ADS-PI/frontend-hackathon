@@ -7,6 +7,8 @@ export type StatusProjeto =
   | "ComRessalvas"
   | "NaoElegivel"
   | "EvidenciaInsuficiente"
+  | "Aprovado"
+  | "Reprovado"
   | "Reanalise";
 
 /** As quatro classes oficiais do desafio, na ordem do Guia do Participante. */
@@ -143,10 +145,14 @@ export function rotuloStatus(status: StatusProjeto): string {
       return "Aguardando Analista";
     case "Elegivel":
       return "Elegível";
+    case "Aprovado":
+      return "Aprovado";
     case "ComRessalvas":
       return "Com ressalvas";
     case "NaoElegivel":
       return "Não elegível";
+    case "Reprovado":
+      return "Reprovado";
     case "EvidenciaInsuficiente":
       return "Evidência insuficiente";
     case "Reanalise":
@@ -167,10 +173,12 @@ export function corBadgeStatus(status: StatusProjeto): {
     case "AguardandoAnalista":
       return { bg: "bg-amber-50", text: "text-amber-800", border: "border-amber-200" };
     case "Elegivel":
+    case "Aprovado":
       return { bg: "bg-emerald-50", text: "text-emerald-800", border: "border-emerald-200" };
     case "ComRessalvas":
       return { bg: "bg-orange-50", text: "text-orange-800", border: "border-orange-200" };
     case "NaoElegivel":
+    case "Reprovado":
       return { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" };
     case "EvidenciaInsuficiente":
       return { bg: "bg-slate-100", text: "text-slate-700", border: "border-slate-300" };
@@ -258,11 +266,17 @@ export async function obterProjetoPorId<T = ProjetoAnaliseResposta | ProjetoProp
 /** Delibera a classificação do analista (4 classes do desafio ou Reanalise), com rastreabilidade. */
 export async function deliberarProjeto(
   projetoId: string,
-  payload: DeliberacaoPayload
+  payloadOuDecisao: DeliberacaoPayload | StatusProjeto,
+  justificativaLegada?: string
 ): Promise<ProjetoAnaliseResposta> {
+  const corpo =
+    typeof payloadOuDecisao === "string"
+      ? { decisao: payloadOuDecisao, justificativa: justificativaLegada }
+      : payloadOuDecisao;
+
   return await api<ProjetoAnaliseResposta>(`/api/projetos/${projetoId}/deliberar`, {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(corpo),
   });
 }
 
