@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog, NativeSelect } from "@chakra-ui/react";
+import { CloseButton, Dialog, NativeSelect } from "@chakra-ui/react";
 import { useEffect, useMemo, useState } from "react";
 import { BotaoPrimario, BotaoSecundario } from "@/components/botoes";
 import { Casca } from "@/components/casca";
@@ -689,7 +689,8 @@ export default function Analista() {
           </section>
 
           {/* Modal / Painel do Dossiê Completo e Deliberação */}
-          <Dialog.Root open={casoSelecionado !== null} onOpenChange={(d) => !d.open && setCasoSelecionado(null)}>
+          {casoSelecionado ? (
+          <Dialog.Root open onOpenChange={(d) => !d.open && setCasoSelecionado(null)}>
             <Dialog.Backdrop />
             <Dialog.Positioner p="4">
               <Dialog.Content className="neo" bg="#f7f8f9" w="full" maxW="3xl" maxH="90vh" overflowY="auto">
@@ -702,6 +703,9 @@ export default function Analista() {
                       </Dialog.Title>
                     </div>
                   </div>
+                  <Dialog.CloseTrigger asChild>
+                    <CloseButton size="sm" />
+                  </Dialog.CloseTrigger>
                 </Dialog.Header>
 
                 <Dialog.Body className="space-y-6">
@@ -1207,6 +1211,7 @@ export default function Analista() {
               </Dialog.Content>
             </Dialog.Positioner>
           </Dialog.Root>
+          ) : null}
 
           {/* Visualizador do Parecer Rastreável (documento defendível) */}
           {parecer ? (
@@ -1223,6 +1228,9 @@ export default function Analista() {
                       Gerado em {new Date(parecer.geradoEm).toLocaleString("pt-BR")} · classificação:{" "}
                       <strong>{parecer.classificacao}</strong> · documento rastreável e defendível
                     </p>
+                    <Dialog.CloseTrigger asChild>
+                      <CloseButton size="sm" />
+                    </Dialog.CloseTrigger>
                   </Dialog.Header>
                   <Dialog.Body>
                     <div
@@ -1231,6 +1239,9 @@ export default function Analista() {
                     />
                   </Dialog.Body>
                   <Dialog.Footer className="flex flex-wrap gap-2">
+                    <BotaoSecundario type="button" onClick={() => setParecer(null)}>
+                      Fechar
+                    </BotaoSecundario>
                     <BotaoSecundario type="button" onClick={() => baixarParecer(parecer)}>
                       ⬇ Baixar .md
                     </BotaoSecundario>
