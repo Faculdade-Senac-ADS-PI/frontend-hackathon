@@ -85,6 +85,8 @@ export type CriterioAvaliadoResposta = {
   nota?: number | null;
   notaMaxima: number;
   justificativa?: string | null;
+  /** Normas da base citadas pela IA para sustentar este critério (com o número do trecho [n]). */
+  normasCitadas?: string | null;
 };
 
 /** Visão completa do analista: notas da IA, resumo, justificativas por critério e anexos PDF/CSV. */
@@ -106,6 +108,20 @@ export type ProjetoAnaliseResposta = {
   resumoIa?: string | null;
   parecerIa?: string | null;
   origemAnaliseIa?: string | null;
+  /** Classe oficial recomendada pela IA (Elegível, Com ressalvas, Não elegível, Evidência insuficiente). */
+  classeRecomendadaIa?: string | null;
+  /** Motivo da classe recomendada (não é a soma das notas). */
+  motivoClasseIa?: string | null;
+  /** Evidências do dossiê apontadas pela IA para sustentar a conclusão. */
+  evidenciasDossieIa?: string | null;
+  /** Divergências / evidências contrárias identificadas pela IA. */
+  contradicoesIa?: string | null;
+  /** Lacunas que faltam para afirmar a elegibilidade. */
+  lacunasIa?: string | null;
+  /** Indica se a avaliação usou a base de normas (RAG). */
+  usouRag?: boolean;
+  /** Quantidade de trechos de norma consultados na avaliação. */
+  trechosConsultadosIa?: number;
   analisadoEm?: string | null;
   criterios: CriterioAvaliadoResposta[];
   justificativaAnalista?: string | null;
@@ -283,6 +299,31 @@ export async function deliberarProjeto(
 /** Gera o parecer rastreável (Markdown) da classificação registrada. */
 export async function gerarParecer(projetoId: string): Promise<ParecerResposta> {
   return await api<ParecerResposta>(`/api/projetos/${projetoId}/parecer`);
+}
+
+/** Trecho de norma citado em uma resposta do agente. */
+export type TrechoNorma = {
+  documento: string;
+  trecho: string;
+  referencia: string;
+};
+
+/** Resposta da consulta do analista às normas (RAG), sempre com as fontes citadas. */
+export type ConsultaAgenteResposta = {
+  respostaApoio: string;
+  citacoes: TrechoNorma[];
+  decisaoAutomatica: boolean;
+};
+
+/** Consulta em linguagem natural às normas da Lei do Bem (apoio ao analista, nunca decide). */
+export async function consultarAgenteNormas(
+  projetoId: string,
+  pergunta: string
+): Promise<ConsultaAgenteResposta> {
+  return await api<ConsultaAgenteResposta>("/api/agente/consulta", {
+    method: "POST",
+    body: JSON.stringify({ projetoId, pergunta }),
+  });
 }
 
 export function formatarBytes(bytes: number): string {
