@@ -7,6 +7,7 @@ import { Casca } from "@/components/casca";
 import { Aviso, EstadoCarregando, EstadoVazio } from "@/components/estados";
 import {
   CLASSES_ELEGIBILIDADE,
+  consultarAgenteNormas,
   corBadgeStatus,
   deliberarProjeto,
   ehClassificacaoFinal,
@@ -15,6 +16,7 @@ import {
   obterFilaAnalise,
   rotuloStatus,
   type ClasseElegibilidade,
+  type ConsultaAgenteResposta,
   type ParecerResposta,
   type ProjetoAnaliseResposta,
   type StatusProjeto,
@@ -189,6 +191,12 @@ export default function Analista() {
   const [parecer, setParecer] = useState<ParecerResposta | null>(null);
   const [gerandoParecer, setGerandoParecer] = useState(false);
 
+  // Consulta às normas (RAG) dentro do dossiê — apoio ao analista, nunca decide
+  const [consultaPergunta, setConsultaPergunta] = useState("");
+  const [consultaResposta, setConsultaResposta] = useState<ConsultaAgenteResposta | null>(null);
+  const [consultando, setConsultando] = useState(false);
+  const [erroConsulta, setErroConsulta] = useState("");
+
   useEffect(() => {
     void carregarFila();
   }, []);
@@ -252,6 +260,9 @@ export default function Analista() {
     setLacunas(proposta.lacunas || "");
     setRegraAplicada(proposta.regraAplicada || REGRA_PADRAO);
     setErroDecisao("");
+    setConsultaPergunta("");
+    setConsultaResposta(null);
+    setErroConsulta("");
   }
 
   /** Valida os campos obrigatórios da classe escolhida (espelha as regras do backend). */
@@ -360,6 +371,22 @@ export default function Analista() {
     janela.document.close();
     janela.focus();
     setTimeout(() => janela.print(), 350);
+  }
+
+  /** Consulta as normas da base (RAG) sobre o dossiê em análise. A IA apoia; não decide. */
+  async function executarConsulta() {
+    if (!casoSelecionado || !consultaPergunta.trim()) return;
+    setErroConsulta("");
+    setConsultando(true);
+    try {
+      const resposta = await consultarAgenteNormas(casoSelecionado.id, consultaPergunta.trim());
+      setConsultaResposta(resposta);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Não foi possível consultar as normas.";
+      setErroConsulta(msg);
+    } finally {
+      setConsultando(false);
+    }
   }
 
   return (
@@ -757,25 +784,48 @@ export default function Analista() {
                         </div>
 
                         {/* Placar Geral */}
-                        <div className="neo-inset p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-                          <div>
-                            <span className="text-xs text-[#727c81] font-semibold uppercase">Nota Global de Elegibilidade</span>
-                            <div className="flex items-baseline gap-2 mt-0.5">
-                              <span className="font-display text-3xl font-bold text-[#333333]">
-                                {casoSelecionado.notaIa !== null && casoSelecionado.notaIa !== undefined
-                                  ? casoSelecionado.notaIa
-                                  : "—"}
+                        <div className="neo-inset p-4 space-y-3">
+                          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                            <div>
+                              <span className="text-xs text-[#727c81] font-semibold uppercase">Nota Global de Elegibilidade</span>
+                              <div className="flex items-baseline gap-2 mt-0.5">
+                                <span className="font-display text-3xl font-bold text-[#333333]">
+                                  {casoSelecionado.notaIa !== null && casoSelecionado.notaIa !== undefined
+                                    ? casoSelecionado.notaIa
+                                    : "—"}
+                                </span>
+                                <span className="text-sm text-[#727c81]">/ 100 pontos</span>
+                              </div>
+                            </div>
+
+                            <div className="sm:text-right">
+                              <span className="text-xs text-[#727c81] font-semibold uppercase">Classe recomendada pela IA</span>
+                              <p className="font-bold text-base text-emerald-800 mt-0.5">
+                                {casoSelecionado.classeRecomendadaIa ||
+                                  casoSelecionado.recomendacaoIa ||
+                                  "Aguardando"}
+                              </p>
+                              <span
+                                className={`inline-block mt-1 text-[10px] font-mono px-2 py-0.5 rounded ${
+                                  casoSelecionado.usouRag
+                                    ? "text-emerald-800 bg-emerald-100"
+                                    : "text-slate-600 bg-slate-200"
+                                }`}
+                                title="Indica se a avaliação consultou a base de normas (RAG)"
+                              >
+                                {casoSelecionado.usouRag
+                                  ? `RAG: ${casoSelecionado.trechosConsultadosIa ?? 0} trecho(s)`
+                                  : "RAG: base não utilizada"}
                               </span>
-                              <span className="text-sm text-[#727c81]">/ 100 pontos</span>
                             </div>
                           </div>
 
-                          <div className="sm:text-right">
-                            <span className="text-xs text-[#727c81] font-semibold uppercase">Recomendação da IA</span>
-                            <p className="font-bold text-base text-emerald-800 mt-0.5">
-                              {casoSelecionado.recomendacaoIa || "Aguardando"}
+                          {casoSelecionado.motivoClasseIa ? (
+                            <p className="text-xs text-[#4a4a4a] leading-relaxed border-t border-[#ebebeb] pt-2">
+                              <strong className="text-[#333333]">Motivo da classe: </strong>
+                              {casoSelecionado.motivoClasseIa}
                             </p>
-                          </div>
+                          ) : null}
                         </div>
 
                         {/* Resumo da IA */}
@@ -815,10 +865,102 @@ export default function Analista() {
                                     <span className="text-[#4a4a4a]">{c.justificativa}</span>
                                   </div>
                                 ) : null}
+                                {c.normasCitadas ? (
+                                  <div className="pt-1.5 border-t border-[#ebebeb]">
+                                    <span className="font-semibold text-[#8a1533]">Normas citadas: </span>
+                                    <span className="text-[#4a4a4a]">{c.normasCitadas}</span>
+                                  </div>
+                                ) : null}
                               </div>
                             ))}
                           </div>
                         </div>
+
+                        {/* Evidências, contradições e lacunas apontadas pela IA */}
+                        {casoSelecionado.evidenciasDossieIa ||
+                        casoSelecionado.contradicoesIa ||
+                        casoSelecionado.lacunasIa ? (
+                          <div className="grid gap-3 sm:grid-cols-3">
+                            {casoSelecionado.evidenciasDossieIa ? (
+                              <div className="neo-inset p-3.5 space-y-1 text-xs">
+                                <strong className="text-emerald-800">Evidências do dossiê</strong>
+                                <p className="text-[#4a4a4a] leading-relaxed whitespace-pre-wrap">
+                                  {casoSelecionado.evidenciasDossieIa}
+                                </p>
+                              </div>
+                            ) : null}
+                            {casoSelecionado.contradicoesIa ? (
+                              <div className="neo-inset p-3.5 space-y-1 text-xs">
+                                <strong className="text-red-700">Contradições / evidências contrárias</strong>
+                                <p className="text-[#4a4a4a] leading-relaxed whitespace-pre-wrap">
+                                  {casoSelecionado.contradicoesIa}
+                                </p>
+                              </div>
+                            ) : null}
+                            {casoSelecionado.lacunasIa ? (
+                              <div className="neo-inset p-3.5 space-y-1 text-xs">
+                                <strong className="text-amber-700">Lacunas</strong>
+                                <p className="text-[#4a4a4a] leading-relaxed whitespace-pre-wrap">
+                                  {casoSelecionado.lacunasIa}
+                                </p>
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
+
+                      {/* Consulta às normas (RAG) — apoio do agente ao analista */}
+                      <div className="space-y-3 pt-3 border-t border-[#ebebeb]">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#8a1533]">
+                          Consulta às normas (apoio do agente)
+                        </h4>
+                        <p className="text-[11px] text-[#727c81]">
+                          Pergunte sobre o enquadramento e as normas da Lei do Bem. A resposta cita os trechos da base de
+                          conhecimento e <strong>não substitui a decisão do analista</strong>.
+                        </p>
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                          <input
+                            type="text"
+                            value={consultaPergunta}
+                            onChange={(e) => setConsultaPergunta(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") void executarConsulta();
+                            }}
+                            placeholder="Ex.: usar um recurso já existente da plataforma configura novidade tecnológica?"
+                            className="neo-inset flex-1 px-3 py-2 text-xs"
+                          />
+                          <BotaoSecundario
+                            type="button"
+                            loading={consultando}
+                            onClick={() => void executarConsulta()}
+                          >
+                            Consultar normas
+                          </BotaoSecundario>
+                        </div>
+                        {erroConsulta ? <Aviso tipo="error" texto={erroConsulta} /> : null}
+                        {consultaResposta ? (
+                          <div className="space-y-2">
+                            <div className="neo-inset p-3.5 text-xs space-y-1">
+                              <strong className="text-[#8a1533]">Apoio do agente:</strong>
+                              <p className="text-[#4a4a4a] leading-relaxed whitespace-pre-wrap">
+                                {consultaResposta.respostaApoio}
+                              </p>
+                            </div>
+                            {consultaResposta.citacoes.length > 0 ? (
+                              <div className="space-y-1.5">
+                                <span className="text-[10px] font-bold uppercase text-[#727c81]">Fontes citadas</span>
+                                {consultaResposta.citacoes.map((cit, i) => (
+                                  <div key={i} className="neo-inset p-2.5 text-[11px] space-y-0.5">
+                                    <span className="font-mono font-bold text-[#8a1533]">
+                                      [{i + 1}] {cit.referencia}
+                                    </span>
+                                    <p className="text-[#4a4a4a] leading-relaxed">{cit.trecho}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </div>
 
                       {/* Classificação do Analista Humano — 4 classes do desafio */}
